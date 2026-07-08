@@ -47,7 +47,7 @@
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);
   font-size:16.5px;line-height:1.7;font-weight:400;-webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;overflow-x:hidden}
+  text-rendering:optimizeLegibility;overflow-x:hidden;overflow-wrap:break-word}
 img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
@@ -153,47 +153,13 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 /* ============================================================
    HERO
    ============================================================ */
-.hero{position:relative;padding:clamp(48px,7vw,92px) 0 clamp(56px,7vw,96px);overflow:hidden}
-.hero-inner{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,5vw,72px);align-items:center}
+.hero{position:relative;padding:clamp(48px,7vw,92px) 0 clamp(56px,7vw,96px)}
 .hero-copy{max-width:640px}
 .hero-title{font-size:clamp(2.5rem,5.4vw,4.6rem);line-height:1.02;letter-spacing:-.025em;margin-bottom:26px;font-weight:400}
 .hero-title .hl{font-style:italic;color:var(--ink)}
 .hero-lead{font-size:clamp(1.05rem,1.5vw,1.2rem);color:var(--sub);max-width:520px;margin-bottom:32px;line-height:1.65}
 .hero-lead b{color:var(--ink-2);font-weight:600}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:40px}
-.hero-trust{list-style:none;margin:0 0 42px;padding:0;display:flex;flex-wrap:wrap;gap:10px 26px}
-.hero-trust li{display:flex;align-items:center;gap:9px;font-size:.9rem;font-weight:500;color:var(--ink-2)}
-.hero-trust .tick{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;
-  border:1px solid var(--hair-2);color:var(--ink);font-size:10px}
-.hero-metrics{display:flex;gap:clamp(24px,4vw,52px);flex-wrap:wrap;padding-top:34px;border-top:1px solid var(--hair)}
-
-/* Metrik kartı */
-.metric-card{display:flex;flex-direction:column;gap:6px}
-.metric-value{font-family:var(--font-display);font-size:clamp(1.9rem,3vw,2.5rem);color:var(--ink);line-height:1;letter-spacing:-.02em}
-.metric-value span{font-size:.55em;color:var(--sub)}
-.metric-label{font-size:.82rem;color:var(--sub);letter-spacing:.02em}
-
-/* Hero teklif formu kartı */
-.hero-form-card{position:relative;background:var(--card);border:1px solid var(--hair);
-  border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:clamp(24px,3vw,34px);scroll-margin-top:100px}
-.hff-head{margin-bottom:20px}
-.hff-badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--ink);border:1px solid var(--hair-2);padding:5px 12px;border-radius:var(--r-pill);margin-bottom:16px}
-.hff-head h2{font-family:var(--font-display);font-size:1.6rem;margin-bottom:6px}
-.hff-head p{font-size:.9rem;color:var(--sub);margin:0}
-.hero-form{display:grid;gap:12px}
-.hero-form input,.hero-form select{width:100%;border:1px solid var(--hair-2);background:var(--paper-2);
-  border-radius:var(--r-sm);padding:13px 14px;font:inherit;font-size:.95rem;color:var(--ink);
-  outline:none;transition:.16s ease}
-.hero-form input::placeholder{color:#a49e91}
-.hero-form input:focus,.hero-form select:focus{border-color:var(--ink);background:#fff}
-.hero-form .kvkk-line{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:.8rem;color:var(--sub);line-height:1.5}
-.hero-form .kvkk-line input{width:auto;margin-top:2px;accent-color:var(--ink)}
-.hero-form .kvkk-line a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-.hff-foot{display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--hair)}
-.hff-foot a{flex:1;text-align:center;font-size:.88rem;font-weight:600;color:var(--ink);
-  border:1px solid var(--hair-2);border-radius:var(--r-sm);padding:12px;transition:.16s ease}
-.hff-foot a:hover{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
 
 /* ============================================================
    SECTION + BAŞLIK
@@ -430,7 +396,7 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   padding:clamp(26px,3.5vw,40px);box-shadow:var(--shadow-1)}
 .quote-card h2{font-family:var(--font-display);font-size:1.7rem;margin-bottom:8px}
 .quote-sub{color:var(--sub);font-size:.94rem;margin-bottom:26px}
-.quote-sub span{color:var(--ink);font-weight:700}
+.quote-sub span{color:var(--ink);font-weight:600}
 .quote-form{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .fg{display:flex;flex-direction:column;gap:7px}
@@ -439,7 +405,7 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .quote-form input,.quote-form select,.quote-form textarea{width:100%;border:1px solid var(--hair-2);
   background:var(--paper-2);border-radius:var(--r-sm);padding:13px 14px;font:inherit;font-size:.95rem;
   color:var(--ink);outline:none;transition:.16s ease}
-.quote-form input::placeholder,.quote-form textarea::placeholder{color:#a49e91}
+.quote-form input::placeholder,.quote-form textarea::placeholder{color:#8f887a}
 .quote-form input:focus,.quote-form select:focus,.quote-form textarea:focus{border-color:var(--ink);background:#fff}
 .quote-form textarea{resize:vertical;min-height:110px}
 .kvkk-line{display:flex;flex-direction:row!important;align-items:flex-start;gap:11px;font-size:.9rem;color:var(--ink-2);line-height:1.55}
@@ -494,9 +460,7 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   .pkg-grid{grid-template-columns:repeat(2,1fr)}
   .hero-cards{grid-template-columns:repeat(2,1fr)}
   .work-grid{grid-template-columns:repeat(2,1fr)}
-  .hero-inner{grid-template-columns:1fr;gap:44px}
   .hero-copy{max-width:none}
-  .hero-form-card{max-width:520px}
   .split-2,.contact-grid{grid-template-columns:1fr}
   .footer-top{grid-template-columns:1fr 1fr;gap:36px}
 

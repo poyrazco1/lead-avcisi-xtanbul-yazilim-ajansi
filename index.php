@@ -4,7 +4,12 @@ $valid=['home','hizmetler','paketler','referanslar','blog','haberler','kurumsal'
 $notFound=!in_array($page,$valid,true);
 $s=site_settings();
 $wa=normalize_whatsapp($s['contact_whatsapp']);
-if($notFound){ http_response_code(404); header_html('home',['title'=>'Sayfa bulunamadı | '.$s['company_name'],'desc'=>'Aradığınız sayfa bulunamadı.']); }
+if($notFound){ http_response_code(404); header_html('home',['title'=>'Sayfa bulunamadı | '.$s['company_name'],'desc'=>'Aradığınız sayfa bulunamadı. Anasayfaya dönebilir veya bizimle iletişime geçebilirsiniz.']); }
+elseif($page==='hizmetler' && ($hq=$_GET['h']??'') && ($svcMeta=front_service_find($hq))){
+  $long=$svcMeta['long']; $mdesc=$long;
+  if(mb_strlen($long)>158){ $cut=mb_substr($long,0,155); $sp=mb_strrpos($cut,' '); $mdesc=($sp?mb_substr($cut,0,$sp):$cut).'…'; }
+  header_html('hizmetler',['title'=>$svcMeta['title'].' | '.$s['company_name'],'desc'=>$mdesc]);
+}
 else { header_html($page); }
 ?>
 <?php if($notFound): ?>
@@ -51,7 +56,7 @@ else { header_html($page); }
 <section class="hero">
   <div class="wrap">
     <div class="hero-copy">
-      <span class="eyebrow"><span class="eb-dot"></span>Web Tasarım &amp; Dijital Çözümler</span>
+      <span class="eyebrow"><span class="eb-dot" aria-hidden="true"></span>Web Tasarım &amp; Dijital Çözümler</span>
       <h1 class="hero-title">Markanızı büyüten,<br><span class="hl">satışa çeviren</span> web siteleri.</h1>
       <p class="hero-lead">Tek sayfa siteden yönetim panelli kurumsal siteye kadar; mobil uyumlu, SEO temelli ve <b>WhatsApp’a dönüşüm</b> taşıyan profesyonel web çözümleri kuruyoruz.</p>
       <div class="hero-actions">
@@ -61,7 +66,7 @@ else { header_html($page); }
     </div>
     <div class="hero-cards">
       <?php foreach($hero_cards as $c): ?>
-      <article class="trust-card"><span class="tc-mark"><?=e($c['m'])?></span><h3><?=e($c['t'])?></h3><p><?=e($c['d'])?></p></article>
+      <article class="trust-card"><span class="tc-mark" aria-hidden="true"><?=e($c['m'])?></span><h3><?=e($c['t'])?></h3><p><?=e($c['d'])?></p></article>
       <?php endforeach; ?>
     </div>
   </div>
@@ -98,7 +103,7 @@ else { header_html($page); }
     <div class="work-grid">
       <?php foreach($home_works as $w): ?>
       <article class="work-card">
-        <div class="work-media"><?php if(!empty($w['img'])): ?><img src="<?=e($w['img'])?>" alt="<?=e($w['title'])?>" loading="lazy"><?php else: ?><span class="work-ph"><span><?=e(first_letter($w['cat']))?></span></span><?php endif; ?></div>
+        <div class="work-media"><?php if(!empty($w['img'])): ?><img src="<?=e($w['img'])?>" alt="<?=e($w['title'])?>" loading="lazy"><?php else: ?><span class="work-ph" aria-hidden="true"><span><?=e(first_letter($w['cat']))?></span></span><?php endif; ?></div>
         <div class="work-body"><span class="work-cat"><?=e($w['cat'])?></span><h3><?=e($w['title'])?></h3></div>
       </article>
       <?php endforeach; ?>
@@ -165,7 +170,7 @@ else { header_html($page); }
     <?=breadcrumb_html([['label'=>'Anasayfa','url'=>'/'],['label'=>'Hizmetler','url'=>'/hizmetler'],['label'=>$svc['title']]])?>
     <div class="hero-cards">
       <?php foreach(service_hero_cards() as $c): ?>
-      <article class="trust-card"><span class="tc-mark"><?=e($c['m'])?></span><h3><?=e($c['t'])?></h3><p><?=e($c['d'])?></p></article>
+      <article class="trust-card"><span class="tc-mark" aria-hidden="true"><?=e($c['m'])?></span><h3><?=e($c['t'])?></h3><p><?=e($c['d'])?></p></article>
       <?php endforeach; ?>
     </div>
   </div>
@@ -214,7 +219,7 @@ else { header_html($page); }
   <div class="section-heading"><div><span class="eyebrow">Çalışma Örneği</span><h2 class="section-title">Teslim ettiğimiz yapı</h2><p class="section-lead">Hazırladığımız çalışmaların masaüstü, mobil ve yönetim görünümünden örnek düzenler.</p></div><a class="head-link" href="/referanslar">Referanslar →</a></div>
   <div class="work-grid">
     <?php foreach(service_gallery() as $g): ?>
-    <article class="work-card"><div class="work-media"><span class="work-ph"><span><?=e(first_letter($g['cat']))?></span></span></div><div class="work-body"><span class="work-cat"><?=e($g['cat'])?></span><h3><?=e($g['title'])?></h3></div></article>
+    <article class="work-card"><div class="work-media"><span class="work-ph" aria-hidden="true"><span><?=e(first_letter($g['cat']))?></span></span></div><div class="work-body"><span class="work-cat"><?=e($g['cat'])?></span><h3><?=e($g['title'])?></h3></div></article>
     <?php endforeach; ?>
   </div>
 </div></section>
@@ -273,7 +278,7 @@ else { header_html($page); }
   <div class="work-grid">
     <?php foreach($refs as $r): ?>
     <article class="work-card">
-      <div class="work-media"><?php if(!empty($r['logo'])): ?><img src="<?=e($r['logo'])?>" alt="<?=e($r['name'])?>" loading="lazy"><?php else: ?><span class="work-ph"><span><?=e(first_letter($r['name']))?></span></span><?php endif; ?></div>
+      <div class="work-media"><?php if(!empty($r['logo'])): ?><img src="<?=e($r['logo'])?>" alt="<?=e($r['name'])?>" loading="lazy"><?php else: ?><span class="work-ph" aria-hidden="true"><span><?=e(first_letter($r['name']))?></span></span><?php endif; ?></div>
       <div class="work-body"><span class="work-cat"><?=e($r['category']??'Web Tasarım')?></span><h3><?=e($r['name'])?></h3><?php if(!empty($r['note'])): ?><p><?=e($r['note'])?></p><?php endif; ?><?php if(!empty($r['website'])): ?><a class="work-visit" href="<?=e($r['website'])?>" target="_blank" rel="noopener">Web sitesini gör →</a><?php endif; ?></div>
     </article>
     <?php endforeach; ?>
