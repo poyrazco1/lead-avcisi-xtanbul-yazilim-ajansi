@@ -182,3 +182,52 @@ CREATE TABLE IF NOT EXISTS login_logs (
   KEY idx_email (email),
   KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- v5 CRM derinleştirme (güvenli migration — panel açılışta ensure_column ile de eklenir)
+-- MySQL 8+/MariaDB 10.4+ IF NOT EXISTS destekler; eski sürümde mevcut kolonlarda hatayı yoksayın.
+-- ============================================================
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_name VARCHAR(190) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_position VARCHAR(120) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS whatsapp_phone VARCHAR(80) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS email VARCHAR(190) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS neighborhood VARCHAR(160) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS instagram VARCHAR(190) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS facebook VARCHAR(190) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS website_quality VARCHAR(60) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS competitor_density VARCHAR(40) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS priority VARCHAR(20) NOT NULL DEFAULT 'Ilık';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS close_probability INT NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS requested_service VARCHAR(120) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS has_domain TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS has_hosting TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS has_logo TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS has_photos TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS has_content TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS need_multilang TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS need_appointment TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS need_online_payment TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS need_blog TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS need_gallery TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS estimated_amount DECIMAL(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS net_amount DECIMAL(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS discount_amount DECIMAL(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS deposit_amount DECIMAL(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS offer_sent TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS offer_sent_at DATETIME NULL;
+
+-- Lead iletişim geçmişi / aktivite kaydı
+CREATE TABLE IF NOT EXISTS lead_activities (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    lead_id INT UNSIGNED NOT NULL,
+    type VARCHAR(40) NOT NULL DEFAULT 'note',
+    title VARCHAR(190) NULL,
+    message TEXT NULL,
+    old_status VARCHAR(80) NULL,
+    new_status VARCHAR(80) NULL,
+    created_by VARCHAR(190) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_lead (lead_id),
+    KEY idx_type (type),
+    KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

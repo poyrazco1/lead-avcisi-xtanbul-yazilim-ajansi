@@ -11,15 +11,15 @@ $packagePrices = setting_get('package_prices', package_default_prices());
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lead Avcısı Panel v4.8</title>
-  <link rel="stylesheet" href="assets/style.css?v=48">
+  <title>Lead Avcısı Panel v5</title>
+  <link rel="stylesheet" href="assets/style.css?v=50">
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark">LA</div>
-        <div><strong>Lead Avcısı</strong><span>Ajans CRM v4.8</span></div>
+        <div><strong>Lead Avcısı</strong><span>Ajans CRM v5</span></div>
       </div>
       <nav class="nav-menu">
         <div class="nav-group"><span>Kontrol</span><a class="active" href="#dashboardPanel" data-panel-nav>Dashboard</a></div>
@@ -32,15 +32,23 @@ $packagePrices = setting_get('package_prices', package_default_prices());
         <span>API key frontend’de görünmez. Aramalar sunucu üzerinden geçer. “Tekrar aranmasın” numaraları kara listeye alınır.</span>
       </div>
     </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <span class="eyebrow">Xtanbul Ajans Operasyon Paneli</span>
-          <h1>Lead Toplama + Satış CRM</h1>
-          <p>Lead toplama, arama, WhatsApp, teklif, sözleşme, ödeme ve teslim süreci artık modül modül yönetilir.</p>
+        <div style="display:flex;align-items:center;gap:14px">
+          <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menü"><span></span><span></span><span></span></button>
+          <div>
+            <span class="eyebrow">Xtanbul Ajans Operasyon Paneli</span>
+            <h1>Lead Toplama + Satış CRM</h1>
+            <p>Lead toplama, arama, WhatsApp, teklif, sözleşme, ödeme ve teslim tek panelde.</p>
+          </div>
         </div>
-        <div class="topbar-actions"><div class="user-pill">admin@poyraztoner.com</div><a class="btn ghost mini" href="../" target="_blank">Siteyi Aç</a></div>
+        <div class="topbar-actions">
+          <div class="topbar-search"><input id="topSearch" type="search" placeholder="Hızlı lead ara..."></div>
+          <div class="user-pill">admin@poyraztoner.com</div>
+          <a class="btn ghost mini" href="../" target="_blank">Siteyi Aç</a>
+        </div>
       </header>
 
       <section class="quick-actions">
@@ -206,6 +214,16 @@ $packagePrices = setting_get('package_prices', package_default_prices());
           <label><b>DB Kullanıcı</b><input readonly value="<?=e(cfg('db.user'))?>"></label>
           <label><b>DB Şifre</b><input readonly value="••••••••••••"></label>
         </div>
+
+        <div class="section-head" style="margin-top:26px"><div><h2>WhatsApp Mesaj Şablonları</h2><p>Değişkenler: <code>{firma_adi}</code> <code>{yetkili}</code> <code>{sektor}</code> <code>{ilce}</code> <code>{sehir}</code> <code>{paket}</code> <code>{teklif_tutari}</code> <code>{kapora}</code> <code>{kalan_odeme}</code> <code>{takip_linki}</code> <code>{satis_temsilcisi}</code> <code>{telefon}</code></p></div><button id="saveTemplates" class="btn primary" type="button">Şablonları Kaydet</button></div>
+        <div class="settings-grid" id="templateGrid">
+          <?php
+          $tplLabels = ['first'=>'İlk WhatsApp mesajı','detail'=>'Detaylı teklif mesajı','payment'=>'Ödeme / kapora mesajı','followup'=>'Takip mesajı','contract'=>'Sözleşme mesajı','delivery'=>'Teslim / yayın mesajı','renewal'=>'Yenileme hatırlatma','tracking'=>'Takip linki mesajı'];
+          $tpls = message_templates();
+          foreach ($tplLabels as $k=>$lbl): ?>
+          <label class="wide-full"><b><?=e($lbl)?></b><textarea data-template="<?=e($k)?>" rows="4"><?=e($tpls[$k] ?? '')?></textarea></label>
+          <?php endforeach; ?>
+        </div>
       </section>
 
       <section id="accountPanel" class="card panel-section">
@@ -283,14 +301,25 @@ $packagePrices = setting_get('package_prices', package_default_prices());
             <input id="quickSearch" type="search" placeholder="İşletme / telefon / not ara">
             <select id="statusFilter">
               <option value="">Tüm durumlar</option>
-              <option>Aranmadı</option><option>WhatsApp gönderildi</option><option>Arandı</option><option>Cevap bekleniyor</option><option>Teklif istedi</option><option>Ödeme linki gönderildi</option><option>Ödeme bekleniyor</option><option>Kapora alındı</option><option>Müşteri oldu</option><option>İlgilenmedi</option><option>Tekrar aranmasın</option>
+              <?php foreach (lead_pipeline_statuses() as $st): ?><option><?=e($st)?></option><?php endforeach; ?>
             </select>
             <select id="scoreFilter"><option value="">Tüm skorlar</option><option value="80">80+ sıcak</option><option value="60">60+ orta</option></select>
           </div>
         </div>
+        <div class="filters-grid">
+          <input id="cityFilter" type="text" placeholder="Şehir">
+          <input id="sectorFilter" type="text" placeholder="Sektör">
+          <select id="priorityFilter"><option value="">Tüm öncelikler</option><?php foreach(priority_options() as $p): ?><option><?=e($p)?></option><?php endforeach; ?></select>
+          <select id="assignedFilter"><option value="">Tüm temsilciler</option><?php foreach($teamMembers as $tm): ?><option><?=e($tm)?></option><?php endforeach; ?></select>
+          <select id="websiteFilter"><option value="">Web sitesi: hepsi</option><option value="no">Web sitesi yok</option><option value="yes">Web sitesi var</option></select>
+          <select id="waFilter"><option value="">WhatsApp: hepsi</option><option value="sent">Gönderildi</option><option value="not">Gönderilmedi</option></select>
+          <select id="offerFilter"><option value="">Teklif: hepsi</option><option value="sent">Teklif gönderildi</option><option value="not">Teklif gönderilmedi</option></select>
+          <select id="followFilter"><option value="">Takip: hepsi</option><option value="today">Bugün aranacak</option><option value="overdue">Gecikmiş takip</option></select>
+        </div>
+        <div class="filter-actions"><button id="clearFilters" class="btn ghost mini" type="button">Filtreleri Temizle</button><span class="muted" id="leadCount"></span></div>
         <div class="table-wrap">
           <table class="lead-table">
-            <thead><tr><th>Skor</th><th>İşletme</th><th>Sektör</th><th>Bölge</th><th>Telefon</th><th>Durum</th><th>İşlem</th></tr></thead>
+            <thead><tr><th>Skor</th><th>Firma / Yetkili</th><th>Telefon</th><th>Sektör</th><th>Konum</th><th>Dijital</th><th>Durum</th><th>Son temas</th><th>Takip</th><th>Temsilci</th><th>Aksiyon</th></tr></thead>
             <tbody id="leadRows"></tbody>
           </table>
         </div>
@@ -321,9 +350,36 @@ $packagePrices = setting_get('package_prices', package_default_prices());
     </div>
   </div>
 
+  <div id="detailModal" class="modal-backdrop hidden">
+    <div class="lead-modal">
+      <div class="lead-modal-head">
+        <div><h2 id="detailTitle">Lead Detayı</h2><div class="sub" id="detailSub"></div></div>
+        <button class="modal-close" type="button" onclick="closeDetail()">×</button>
+      </div>
+      <div class="tab-bar" id="detailTabs"></div>
+      <div id="detailBody"></div>
+      <div class="modal-save-bar">
+        <button class="btn ghost" type="button" onclick="closeDetail()">Kapat</button>
+        <button class="btn primary" type="button" id="detailSave">Değişiklikleri Kaydet</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
-  <script>window.LEAD_APP={csrf:<?=json_encode($csrf)?>, packagePrices:<?=json_encode($packagePrices, JSON_UNESCAPED_UNICODE)?>, teamMembers:<?=json_encode($teamMembers, JSON_UNESCAPED_UNICODE)?>};</script>
+  <script>window.LEAD_APP={
+    csrf:<?=json_encode($csrf)?>,
+    packagePrices:<?=json_encode($packagePrices, JSON_UNESCAPED_UNICODE)?>,
+    teamMembers:<?=json_encode($teamMembers, JSON_UNESCAPED_UNICODE)?>,
+    statuses:<?=json_encode(lead_pipeline_statuses(), JSON_UNESCAPED_UNICODE)?>,
+    priorities:<?=json_encode(priority_options(), JSON_UNESCAPED_UNICODE)?>,
+    websiteQualities:<?=json_encode(website_quality_options(), JSON_UNESCAPED_UNICODE)?>,
+    competitorDensities:<?=json_encode(competitor_density_options(), JSON_UNESCAPED_UNICODE)?>,
+    services:<?=json_encode(requested_service_options(), JSON_UNESCAPED_UNICODE)?>,
+    paymentStatuses:<?=json_encode(payment_statuses(), JSON_UNESCAPED_UNICODE)?>,
+    orderStatuses:<?=json_encode(order_statuses(), JSON_UNESCAPED_UNICODE)?>,
+    packages:<?=json_encode(array_map(fn($p)=>$p['label'], package_catalog($packagePrices)), JSON_UNESCAPED_UNICODE)?>
+  };</script>
   <script src="assets/data.js?v=46"></script>
-  <script src="assets/app.js?v=46"></script>
+  <script src="assets/app.js?v=50"></script>
 </body>
 </html>

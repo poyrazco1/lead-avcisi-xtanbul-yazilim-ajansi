@@ -62,6 +62,51 @@ function service_groups(){ return [
  ['title'=>'E-Ticaret Danışmanlığı','icon'=>'▣','items'=>['Kategori Yapısı','Ürün Sayfası Düzeni','Kampanya Akışı','Pazaryeri Hazırlığı','Dönüşüm Danışmanlığı']]
  ]; }
 function sector_targets(){return ['Kombici','Halı yıkama','Güzellik salonu','Medikal firma','Sanayi üreticisi','Oto servis','Telefon tamiri','Pimapen','Tekstil üreticisi','Diş kliniği','Veteriner','Emlakçı','Kuyumcu','Restoran','Klinik','Maden ve imalat'];}
+
+/* ===== Kurumsal ön yüz içerikleri ===== */
+function front_services(){ return [
+ ['icon'=>'🖥️','title'=>'Web Tasarım','desc'=>'Mobil uyumlu, hızlı açılan, satış odaklı modern web sitesi tasarımı.'],
+ ['icon'=>'🏢','title'=>'Kurumsal Web Sitesi','desc'=>'Çok sayfalı, güven veren, marka dilinize uygun kurumsal siteler.'],
+ ['icon'=>'📄','title'=>'Tek Sayfa Web Sitesi','desc'=>'İşletmenizi tek ekranda anlatan, WhatsApp’a dönüştüren landing page.'],
+ ['icon'=>'📅','title'=>'Randevulu Web Sitesi','desc'=>'Ziyaretçiyi randevu/talep formuyla doğrudan müşteriye çeviren yapı.'],
+ ['icon'=>'⚙️','title'=>'Yönetim Panelli Site','desc'=>'İçerik, blog, referans ve siparişleri kendiniz yönetin.'],
+ ['icon'=>'🛒','title'=>'E-Ticaret Danışmanlığı','desc'=>'Kategori, ürün ve kampanya kurgusuyla satışa hazır altyapı.'],
+ ['icon'=>'🔍','title'=>'SEO Temel Kurulum','desc'=>'Teknik SEO, başlık/meta düzeni ve Google görünürlük temeli.'],
+ ['icon'=>'📣','title'=>'Google Ads / Sosyal Medya','desc'=>'Doğru hedefleme ile reklam ve sosyal medya danışmanlığı.'],
+];}
+function why_us_cards(){ return [
+ ['icon'=>'🎯','title'=>'Satış odaklı tasarım','desc'=>'Sadece güzel değil; ziyaretçiyi arayan ve yazan müşteriye dönüştüren yapı.'],
+ ['icon'=>'💬','title'=>'WhatsApp & arama dönüşümü','desc'=>'Her sayfada tek tıkla WhatsApp ve arama ile hızlı iletişim.'],
+ ['icon'=>'📱','title'=>'Mobil performans','desc'=>'Telefonda hızlı açılan, taşmayan, kusursuz görünen sayfalar.'],
+ ['icon'=>'🔎','title'=>'SEO uyumlu yapı','desc'=>'Google’da bulunmanız için doğru başlık, içerik ve teknik temel.'],
+ ['icon'=>'🤝','title'=>'Teslim sonrası destek','desc'=>'Yayına aldıktan sonra da yanınızdayız; yenileme ve bakım takibi.'],
+ ['icon'=>'🧩','title'=>'Panel / içerik yönetimi','desc'=>'İçeriklerinizi kendiniz güncelleyebileceğiniz panel opsiyonu.'],
+];}
+function process_steps(){ return [
+ ['no'=>'01','title'=>'İhtiyaç Analizi','desc'=>'Sektör, hedef ve rakip analizi ile doğru kapsam belirlenir.'],
+ ['no'=>'02','title'=>'Teklif ve Paket Seçimi','desc'=>'Şeffaf fiyat ve kapsam yazılı hale gelir.'],
+ ['no'=>'03','title'=>'Tasarım Taslağı','desc'=>'Marka dilinize uygun taslak hazırlanır ve onaylanır.'],
+ ['no'=>'04','title'=>'İçerik ve Görsel','desc'=>'Metin, görsel ve SEO içerikleri hazırlanır.'],
+ ['no'=>'05','title'=>'Kodlama','desc'=>'Mobil uyumlu, hızlı ve güvenli şekilde geliştirilir.'],
+ ['no'=>'06','title'=>'Test','desc'=>'Mobil, tablet ve masaüstünde eksiksiz test edilir.'],
+ ['no'=>'07','title'=>'Yayına Alma','desc'=>'Domain/hosting kurulumu ile siteniz yayına alınır.'],
+ ['no'=>'08','title'=>'Takip ve Destek','desc'=>'Yayın sonrası performans takibi ve sürekli destek.'],
+];}
+function package_cards(){ return [
+ ['name'=>'Başlangıç Tek Sayfa','who'=>'Hızlı dijital vitrin isteyen yerel işletmeler','price'=>'4.999 TL’den başlar','features'=>['Mobil uyumlu tek sayfa','WhatsApp & arama butonu','SEO temel kurulum','Harita ve iletişim'],'featured'=>false],
+ ['name'=>'Tek Sayfa + Randevu','who'=>'Randevu/talep toplayan hizmet işletmeleri','price'=>'Teklif alınır','features'=>['Randevu / talep formu','Hizmet alanları','KVKK sayfaları','WhatsApp takip'],'featured'=>false],
+ ['name'=>'Çok Sayfalı Kurumsal','who'=>'Kurumsal duruş isteyen markalar','price'=>'Teklif alınır','features'=>['Hizmet sayfaları','Blog / haber altyapısı','Referans yönetimi','Çok dil opsiyonu'],'featured'=>true],
+ ['name'=>'Yönetim Panelli Site','who'=>'İçeriğini kendi yöneten işletmeler','price'=>'Teklif alınır','features'=>['İçerik yönetim paneli','Blog/haber/referans ekleme','Randevu opsiyonu','Sipariş takip'],'featured'=>false],
+ ['name'=>'Özel Yazılım / CRM','who'=>'Süreçlerini dijitalleştiren firmalar','price'=>'Teklif alınır','features'=>['İhtiyaca özel yazılım','CRM / panel geliştirme','Entegrasyonlar','Sürekli geliştirme'],'featured'=>false],
+];}
+function mega_menu_groups(){ return [
+ ['title'=>'Web Hizmetleri','items'=>['Web Tasarım','Kurumsal Web Sitesi','Tek Sayfa Web Sitesi','Randevulu Web Sitesi']],
+ ['title'=>'Grafik / Marka','items'=>['Logo Yönlendirme','Kurumsal Kimlik','Katalog Tasarımı','Sosyal Medya Görselleri']],
+ ['title'=>'Dijital Pazarlama','items'=>['SEO Danışmanlığı','Google Ads','Sosyal Medya Yönetimi','Dönüşüm Odaklı Landing']],
+ ['title'=>'Teknik Destek / Bakım','items'=>['Site Bakımı','Hız Optimizasyonu','Güvenlik & Yedekleme','Domain / Hosting']],
+ ['title'=>'E-Ticaret / Özel Yazılım','items'=>['E-Ticaret Danışmanlığı','Yönetim Paneli','CRM Çözümleri','Özel Web Yazılım']],
+];}
+function trust_badges(){ return ['Hızlı teslim','Mobil uyumlu','SEO temeli','WhatsApp odaklı dönüşüm','Yönetim paneli opsiyonu']; }
 function meta_for($page){$m=[
  'home'=>['title'=>'Xtanbul Yazılım Agent | Uygun Fiyata SEO Uyumlu Web Sitesi','desc'=>'Tek sayfa, randevulu, çok sayfalı ve yönetim panelli SEO uyumlu web sitesi. Küçük işletmeler için hızlı, modern ve uygun fiyatlı dijital çözümler.'],
  'hizmetler'=>['title'=>'Web Tasarım, SEO, Reklam ve E-Ticaret Danışmanlığı | Xtanbul','desc'=>'Web site tasarımı, SEO, Google Ads, sosyal medya, e-ticaret danışmanlığı, randevulu web sitesi ve yönetim paneli hizmetleri.'],
@@ -69,13 +114,44 @@ function meta_for($page){$m=[
  'referanslar'=>['title'=>'Referanslarımız | Xtanbul Yazılım Agent','desc'=>'Xtanbul Yazılım Agent referansları, web sitesi çalışmaları, aktif proje ve müşteri portföyü.'],
  'blog'=>['title'=>'Web Sitesi ve SEO Blog | Xtanbul Yazılım Agent','desc'=>'Uygun fiyatlı web sitesi, SEO, randevu sistemi, Google görünürlüğü ve dijital pazarlama yazıları.'],
  'haberler'=>['title'=>'Haberler | Xtanbul Yazılım Agent','desc'=>'Xtanbul Yazılım Agent duyuruları, kampanyaları ve dijital hizmet haberleri.'],
- 'iletisim'=>['title'=>'İletişim | Xtanbul Yazılım Agent','desc'=>'Uygun fiyatlı web sitesi yaptırmak için Xtanbul Yazılım Agent ile iletişime geçin.'],
+ 'kurumsal'=>['title'=>'Kurumsal | Xtanbul Yazılım Agent','desc'=>'Xtanbul Yazılım Agent; küçük ve orta ölçekli işletmeleri dijitale taşıyan web tasarım ve yazılım ajansı.'],
+ 'iletisim'=>['title'=>'İletişim & Teklif | Xtanbul Yazılım Agent','desc'=>'Uygun fiyatlı web sitesi yaptırmak için Xtanbul Yazılım Agent ile iletişime geçin, hemen teklif alın.'],
  'kvkk'=>['title'=>'KVKK Aydınlatma Metni | Xtanbul Yazılım Agent','desc'=>'Xtanbul Yazılım Agent KVKK aydınlatma metni ve kişisel verilerin işlenmesi hakkında bilgilendirme.'],
  'gizlilik'=>['title'=>'Gizlilik Politikası | Xtanbul Yazılım Agent','desc'=>'Xtanbul Yazılım Agent gizlilik politikası.'],
  'cerez'=>['title'=>'Çerez Politikası | Xtanbul Yazılım Agent','desc'=>'Xtanbul Yazılım Agent çerez politikası.'],
 ]; return $m[$page]??$m['home'];}
 function nav_active($page,$key){return $page===$key?' class="active"':'';}
-function header_html($page='home',$custom=null){$s=site_settings(); $meta=$custom?:meta_for($page); $url=base_url().($_SERVER['REQUEST_URI']??'/'); $wa=normalize_whatsapp($s['contact_whatsapp']); echo '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'.e($meta['title']).'</title><meta name="description" content="'.e($meta['desc']).'"><link rel="canonical" href="'.e($url).'"><meta property="og:title" content="'.e($meta['title']).'"><meta property="og:description" content="'.e($meta['desc']).'"><meta property="og:type" content="website"><meta name="theme-color" content="#080a14"><link rel="icon" href="'.e($s['favicon_path']).'"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="/assets/style.css"><script type="application/ld+json">'.json_encode(['@context'=>'https://schema.org','@type'=>'ProfessionalService','name'=>$s['company_name'],'url'=>base_url(),'telephone'=>$s['contact_phone'],'email'=>$s['contact_email'],'address'=>$s['contact_address'],'areaServed'=>'Türkiye','priceRange'=>'₺₺','serviceType'=>['Web sitesi tasarımı','SEO','Google Ads danışmanlığı','Sosyal medya danışmanlığı','E-ticaret danışmanlığı']],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES).'</script></head><body><div class="site-bg"></div><header class="topbar"><a class="brand" href="/"><img src="'.e($s['logo_path']).'" alt="'.e($s['company_name']).' logo"><span>Xtanbul<em>Agent</em></span></a><button class="menu-btn" onclick="document.body.classList.toggle(\'menu-open\')">Menü</button><nav class="mainnav"><a'.nav_active($page,'home').' href="/">Merhaba</a><a'.nav_active($page,'hizmetler').' href="/hizmetler">Neler Yapıyoruz?</a><a'.nav_active($page,'referanslar').' href="/referanslar">Neler Yaptık?</a><a'.nav_active($page,'blog').' href="/blog">Neler Yazdık?</a><a'.nav_active($page,'iletisim').' href="/iletisim">Bize Ulaşın</a><a class="nav-cta" href="/paketler">Paketler</a></nav></header><a class="whatsapp-float" aria-label="WhatsApp\'tan teklif al" href="https://wa.me/'.$wa.'?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener"><svg class="wa-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path class="wa-bubble" d="M16.03 3.2C9.1 3.2 3.47 8.78 3.47 15.64c0 2.34.66 4.54 1.8 6.42L3.2 28.8l6.95-2.02a12.7 12.7 0 0 0 5.88 1.47c6.94 0 12.57-5.58 12.57-12.45S22.97 3.2 16.03 3.2Z"/><path class="wa-phone" d="M22.98 19.24c-.38 1.08-1.9 1.98-2.74 2.1-.73.1-1.68.15-2.7-.17-.62-.2-1.42-.46-2.44-.9-4.3-1.85-7.1-6.12-7.31-6.4-.21-.28-1.75-2.32-1.75-4.43s1.1-3.15 1.48-3.58c.38-.43.84-.54 1.12-.54h.8c.25.01.6-.09.93.7.36.86 1.22 2.97 1.33 3.18.1.22.17.48.03.76-.13.28-.2.45-.4.7-.2.25-.43.56-.62.75-.2.2-.4.42-.17.85.23.43 1.03 1.7 2.22 2.76 1.53 1.36 2.81 1.78 3.24 1.99.43.21.68.18.93-.11.25-.3 1.07-1.25 1.36-1.68.29-.43.58-.36.98-.21.4.14 2.53 1.2 2.96 1.41.43.22.72.33.83.51.1.18.1 1.07-.28 2.15Z"/></svg><span>WhatsApp</span></a>';}
-function footer_html(){ $s=site_settings(); echo '<footer class="footer"><div><b>'.e($s['company_name']).'</b><p>Uygun fiyatlı, hızlı, SEO uyumlu web sitesi ve dijital danışmanlık.</p><small>'.e($s['contact_address']).'</small></div><div class="footer-links"><a href="/hizmetler">Hizmetler</a><a href="/paketler">Paketler</a><a href="/referanslar">Referanslar</a><a href="/blog">Blog</a><a href="/iletisim">İletişim</a><a href="/kvkk">KVKK</a><a href="/gizlilik">Gizlilik</a><a href="/cerez">Çerez</a></div></footer><script>document.addEventListener("keydown",e=>{if(e.key==="Escape")document.body.classList.remove("menu-open")});</script></body></html>';}
+function mega_menu_html(){
+    $html = '<div class="mega-panel" role="menu"><div class="mega-inner">';
+    foreach(mega_menu_groups() as $g){
+        $html .= '<div class="mega-col"><h4>'.e($g['title']).'</h4><ul>';
+        foreach($g['items'] as $it){ $html .= '<li><a href="/hizmetler">'.e($it).'</a></li>'; }
+        $html .= '</ul></div>';
+    }
+    $html .= '<div class="mega-col mega-cta"><h4>Ne yapmak istiyorsunuz?</h4><p>Size en uygun paketi birlikte belirleyelim, aynı gün teklif çıkaralım.</p><a class="btn primary sm" href="/iletisim#teklif">Ücretsiz Teklif Al</a><a class="btn ghost sm" href="/paketler">Paketleri İncele</a></div>';
+    $html .= '</div></div>';
+    return $html;
+}
+function header_html($page='home',$custom=null){
+    $s=site_settings(); $meta=$custom?:meta_for($page); $url=base_url().($_SERVER['REQUEST_URI']??'/'); $wa=normalize_whatsapp($s['contact_whatsapp']);
+    $navItems=[['hizmetler','Hizmetler'],['paketler','Paketler'],['referanslar','Referanslar'],['blog','Blog / Rehber'],['kurumsal','Kurumsal'],['iletisim','İletişim']];
+    echo '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'.e($meta['title']).'</title><meta name="description" content="'.e($meta['desc']).'"><link rel="canonical" href="'.e($url).'"><meta property="og:title" content="'.e($meta['title']).'"><meta property="og:description" content="'.e($meta['desc']).'"><meta property="og:type" content="website"><meta name="theme-color" content="#ffffff"><link rel="icon" href="'.e($s['favicon_path']).'"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"><link rel="stylesheet" href="/assets/style.css?v=5"><script defer src="/assets/site.js?v=5"></script><script type="application/ld+json">'.json_encode(['@context'=>'https://schema.org','@type'=>'ProfessionalService','name'=>$s['company_name'],'url'=>base_url(),'telephone'=>$s['contact_phone'],'email'=>$s['contact_email'],'address'=>$s['contact_address'],'areaServed'=>'Türkiye','priceRange'=>'₺₺','serviceType'=>['Web sitesi tasarımı','SEO','Google Ads danışmanlığı','Sosyal medya danışmanlığı','E-ticaret danışmanlığı']],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES).'</script></head><body>';
+    echo '<header class="site-header" id="siteHeader"><div class="header-inner"><a class="brand" href="/"><img src="'.e($s['logo_path']).'" alt="'.e($s['company_name']).' logo"><span class="brand-name">Xtanbul<em>Yazılım</em></span></a>';
+    echo '<nav class="main-nav" id="mainNav" aria-label="Ana menü"><ul>';
+    echo '<li class="has-mega"><button type="button" class="nav-link mega-trigger'.($page==='hizmetler'?' active':'').'" aria-expanded="false" aria-haspopup="true">Hizmetler<i class="caret">▾</i></button>'.mega_menu_html().'</li>';
+    foreach($navItems as $it){ if($it[0]==='hizmetler') continue; echo '<li><a class="nav-link'.($page===$it[0]?' active':'').'" href="/'.$it[0].'">'.e($it[1]).'</a></li>'; }
+    echo '<li class="nav-mobile-cta"><a class="btn primary full" href="/iletisim#teklif">Teklif Al</a></li>';
+    echo '</ul></nav>';
+    echo '<div class="header-cta"><a class="phone-link" href="tel:'.e(preg_replace('/\s+/','',$s['contact_phone'])).'"><span>Hemen ara</span><b>'.e($s['contact_phone']).'</b></a><a class="btn primary" href="/iletisim#teklif">Teklif Al</a><button type="button" class="hamburger" id="navToggle" aria-label="Menüyü aç/kapat" aria-expanded="false"><span></span><span></span><span></span></button></div>';
+    echo '</div></header><div class="nav-overlay" id="navOverlay" hidden></div>';
+    echo '<a class="whatsapp-float" aria-label="WhatsApp\'tan teklif al" href="https://wa.me/'.$wa.'?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener"><svg class="wa-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path class="wa-bubble" d="M16.03 3.2C9.1 3.2 3.47 8.78 3.47 15.64c0 2.34.66 4.54 1.8 6.42L3.2 28.8l6.95-2.02a12.7 12.7 0 0 0 5.88 1.47c6.94 0 12.57-5.58 12.57-12.45S22.97 3.2 16.03 3.2Z"/><path class="wa-phone" d="M22.98 19.24c-.38 1.08-1.9 1.98-2.74 2.1-.73.1-1.68.15-2.7-.17-.62-.2-1.42-.46-2.44-.9-4.3-1.85-7.1-6.12-7.31-6.4-.21-.28-1.75-2.32-1.75-4.43s1.1-3.15 1.48-3.58c.38-.43.84-.54 1.12-.54h.8c.25.01.6-.09.93.7.36.86 1.22 2.97 1.33 3.18.1.22.17.48.03.76-.13.28-.2.45-.4.7-.2.25-.43.56-.62.75-.2.2-.4.42-.17.85.23.43 1.03 1.7 2.22 2.76 1.53 1.36 2.81 1.78 3.24 1.99.43.21.68.18.93-.11.25-.3 1.07-1.25 1.36-1.68.29-.43.58-.36.98-.21.4.14 2.53 1.2 2.96 1.41.43.22.72.33.83.51.1.18.1 1.07-.28 2.15Z"/></svg></a><main id="main">';
+}
+function footer_html(){ $s=site_settings(); $wa=normalize_whatsapp($s['contact_whatsapp']); $year=date('Y');
+    echo '</main><footer class="site-footer"><div class="footer-top"><div class="footer-brand"><a class="brand" href="/"><img src="'.e($s['logo_path']).'" alt="'.e($s['company_name']).' logo"><span class="brand-name">Xtanbul<em>Yazılım</em></span></a><p>İşletmenizi internette güven veren, müşteri kazandıran ve WhatsApp’a dönüşüm taşıyan profesyonel web siteleriyle büyütüyoruz.</p><div class="footer-social"><a href="'.e($s['instagram']?:'#').'" aria-label="Instagram" target="_blank" rel="noopener">Instagram</a><a href="'.e($s['linkedin']?:'#').'" aria-label="LinkedIn" target="_blank" rel="noopener">LinkedIn</a><a href="https://wa.me/'.$wa.'" aria-label="WhatsApp" target="_blank" rel="noopener">WhatsApp</a></div></div>';
+    echo '<div class="footer-col"><h4>Hizmetler</h4><a href="/hizmetler">Web Tasarım</a><a href="/hizmetler">Kurumsal Site</a><a href="/hizmetler">Randevulu Site</a><a href="/hizmetler">E-Ticaret Danışmanlığı</a><a href="/hizmetler">SEO Kurulumu</a></div>';
+    echo '<div class="footer-col"><h4>Kurumsal</h4><a href="/kurumsal">Hakkımızda</a><a href="/paketler">Paketler</a><a href="/referanslar">Referanslar</a><a href="/blog">Blog / Rehber</a><a href="/iletisim">İletişim</a></div>';
+    echo '<div class="footer-col"><h4>İletişim</h4><a href="tel:'.e(preg_replace('/\s+/','',$s['contact_phone'])).'">'.e($s['contact_phone']).'</a><a href="mailto:'.e($s['contact_email']).'">'.e($s['contact_email']).'</a><a href="'.e($s['maps_url']).'" target="_blank" rel="noopener">Haritada Aç</a><small>'.e($s['contact_address']).'</small></div>';
+    echo '</div><div class="footer-bottom"><span>© '.$year.' '.e($s['company_name']).' — Tüm hakları saklıdır.</span><div class="footer-legal"><a href="/kvkk">KVKK</a><a href="/gizlilik">Gizlilik</a><a href="/cerez">Çerez</a></div></div></footer></body></html>';
+}
 function require_admin(){session_start(); if(empty($_SESSION['admin'])){header('Location: admin.php'); exit;}}
 ?>

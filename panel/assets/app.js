@@ -2,8 +2,9 @@ const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 let stopFlag = false;
 let lastLeads = [];
-let teamMembers = [];
+let teamMembers = window.LEAD_APP?.teamMembers || [];
 let packagePrices = window.LEAD_APP?.packagePrices || {};
+const OPT = window.LEAD_APP || {};
 
 function toast(msg, type='ok') {
   const t = $('#toast');
@@ -13,7 +14,7 @@ function toast(msg, type='ok') {
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => t.classList.add('hidden'), 5200);
 }
-function moneyFmt(v){return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(Number(v||0));}
+function moneyFmt(v){return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(Number(v||0));}
 function escapeHtml(v){return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function normalizeWa(phone){let d=String(phone||'').replace(/\D+/g,''); if(d.startsWith('0090')) d=d.slice(2); if(d.startsWith('90')) return d; if(d.startsWith('0')) return '90'+d.slice(1); if(d.length===10) return '90'+d; return d;}
 function waUrl(phone,msg){return `https://wa.me/${encodeURIComponent(normalizeWa(phone))}?text=${encodeURIComponent(msg||'')}`;}
@@ -50,11 +51,9 @@ function deselectValue(selectId, value){
   refreshSelectTicks(el);
   el.dispatchEvent(new Event('change',{bubbles:true}));
 }
-
 function splitText(v){return String(v||'').split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean);}
 function packagePriceMap(){const m={}; $$('.package-price').forEach(i=>m[i.dataset.package]=i.value.trim()); return m;}
 function packagePrice(key){return packagePriceMap()[key] || packagePrices[key] || '';}
-
 function fillSelect(el, items, opts={}) {
   if (!el) return;
   el.innerHTML = '';
@@ -73,12 +72,10 @@ function initFilters(){
   fillSelect($('#mainCategorySelect'), mains);
   selectOption($('#mainCategorySelect'), 'Teknik Servis & Tamir');
   fillSubCategories();
-
   const cities = Object.keys(window.TR_LOCATIONS || {}).sort((a,b)=>a.localeCompare(b,'tr'));
   fillSelect($('#citySelect'), cities);
   selectOption($('#citySelect'), 'İstanbul');
   fillDistricts();
-
   $('#mainCategorySelect')?.addEventListener('change', fillSubCategories);
   $('#subCategorySelect')?.addEventListener('change', fillMicroSectors);
   $('#citySelect')?.addEventListener('change', fillDistricts);
@@ -212,47 +209,151 @@ async function startSearch(){
 async function refreshStats(){
   try{
     const d=await api('api/stats.php'); const s=d.stats;
-    $('#statTotal').textContent=s.total; $('#statToday').textContent=s.today; $('#statNew').textContent=s.new; $('#statOffer').textContent=s.offer; $('#statPayment').textContent=s.payment||0; $('#statCustomer').textContent=s.customer||0; $('#statConversion').textContent=(s.conversion||0)+'%'; $('#statDb').textContent=s.db; if($('#statRevenue')) $('#statRevenue').textContent=moneyFmt(s.revenue_total||0); if($('#statPaid')) $('#statPaid').textContent=moneyFmt(s.revenue_paid||0); if($('#statPendingRevenue')) $('#statPendingRevenue').textContent=moneyFmt(s.revenue_pending||0); if($('#statContracts')) $('#statContracts').textContent=s.contracts||0; if($('#statActiveOrders')) $('#statActiveOrders').textContent=s.active_orders||0; if($('#statOverdueDelivery')) $('#statOverdueDelivery').textContent=s.overdue_delivery||0; if($('#statRenewalDue')) $('#statRenewalDue').textContent=s.renewal_due||0;
+    const set=(id,v)=>{const el=$('#'+id); if(el) el.textContent=v;};
+    set('statTotal',s.total); set('statToday',s.today); set('statNew',s.new); set('statOffer',s.offer);
+    set('statPayment',s.payment||0); set('statCustomer',s.customer||0); set('statConversion',(s.conversion||0)+'%'); set('statDb',s.db);
+    set('statRevenue',moneyFmt(s.revenue_total||0)); set('statPaid',moneyFmt(s.revenue_paid||0)); set('statPendingRevenue',moneyFmt(s.revenue_pending||0));
+    set('statContracts',s.contracts||0); set('statActiveOrders',s.active_orders||0); set('statOverdueDelivery',s.overdue_delivery||0); set('statRenewalDue',s.renewal_due||0);
     $('#statusBreakdown').innerHTML = (s.by_status||[]).map(x=>`<span><b>${escapeHtml(x.status)}</b>${escapeHtml(x.c)}</span>`).join('') || '<p class="muted">Henüz veri yok.</p>';
     $('#topSectors').innerHTML = (s.top_sectors||[]).map((x,i)=>`<div><b>${i+1}. ${escapeHtml(x.sector||'-')}</b><span>${escapeHtml(x.c)} lead ${x.avg_score?`· skor ${Math.round(x.avg_score)}`:''}</span></div>`).join('') || '<p class="muted">Henüz veri yok.</p>';
   }catch(e){}
 }
-async function loadLeads(showToast=false){
-  const q = $('#quickSearch')?.value || ''; const status = $('#statusFilter')?.value || ''; const minScore = $('#scoreFilter')?.value || '';
-  const d = await api(`api/leads.php?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&min_score=${encodeURIComponent(minScore)}`);
-  lastLeads = d.leads || []; renderLeads(lastLeads); if(showToast) toast(`${lastLeads.length} kayıt listelendi.`);
+
+/* ============ Lead listesi + filtreler ============ */
+function currentFilters(){
+  return {
+    q: $('#quickSearch')?.value || $('#topSearch')?.value || '',
+    status: $('#statusFilter')?.value || '',
+    min_score: $('#scoreFilter')?.value || '',
+    city: $('#cityFilter')?.value || '',
+    sector: $('#sectorFilter')?.value || '',
+    assigned: $('#assignedFilter')?.value || '',
+    priority: $('#priorityFilter')?.value || '',
+    website: $('#websiteFilter')?.value || '',
+    wa: $('#waFilter')?.value || '',
+    offer: $('#offerFilter')?.value || '',
+    follow: $('#followFilter')?.value || ''
+  };
 }
-function scoreClass(score){score=Number(score||0); return score>=80?'hot':score>=60?'warm':'cold';}
-function renderLeads(rows){
-  const tbody = $('#leadRows'); const cards = $('#mobileCards'); tbody.innerHTML=''; cards.innerHTML='';
-  if(!rows.length){ tbody.innerHTML='<tr><td colspan="7" class="muted">Kayıt yok.</td></tr>'; cards.innerHTML='<div class="lead-card"><p>Kayıt yok.</p></div>'; return; }
-  rows.forEach(r => {
-    const msg = r.whatsapp_message || buildMessage(r); const wa = waUrl(r.phone, msg); const maps = r.maps_url ? `<a class="btn ghost mini" target="_blank" href="${escapeHtml(r.maps_url)}">Harita</a>` : '';
-    const sectorText = [r.sector, r.sub_sector].filter(Boolean).join(' / '); const regionText = [r.district, r.city].filter(Boolean).join(' / ');
-    tbody.insertAdjacentHTML('beforeend', `<tr>
-      <td><span class="score ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span><small>${escapeHtml(r.score_reason||'')}</small></td>
-      <td><span class="biz-name">${escapeHtml(r.name)}</span><span class="muted">${escapeHtml(r.address||'')}</span></td>
-      <td>${escapeHtml(sectorText)}</td><td>${escapeHtml(regionText)}</td><td><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone)}</a></td>
-      <td>${statusSelect(r.id, r.status)}</td>
-      <td><div class="row-actions"><button class="btn call mini" onclick="openCall(${Number(r.id)})">Ara</button><a class="btn primary mini" target="_blank" onclick="markSent(${Number(r.id)})" href="${wa}">İlk WA</a><button class="btn secondary mini" onclick="openMessage(${Number(r.id)},'detail')">Detay</button><button class="btn secondary mini" onclick="openMessage(${Number(r.id)},'payment')">Ödeme</button><button class="btn ghost mini" onclick="openMessage(${Number(r.id)},'followup')">Takip</button><button class="btn ghost mini" onclick="openMessage(${Number(r.id)},'tracking')">Takip Linki</button>${maps}<a class="btn ghost mini" target="_blank" href="contract.php?lead_id=${Number(r.id)}">Sözleşme</a><a class="btn ghost mini" target="_blank" href="quote.php?id=${Number(r.id)}">Teklif</a></div><textarea class="note-input" placeholder="Not" onblur="updateNote(${Number(r.id)}, this.value)">${escapeHtml(r.note||'')}</textarea></td>
-    </tr>`);
-    cards.insertAdjacentHTML('beforeend', `<article class="lead-card"><div class="card-top"><h3>${escapeHtml(r.name)}</h3><span class="score ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></div><p>${escapeHtml(sectorText)} · ${escapeHtml(regionText)}</p><p><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone)}</a></p><p>${escapeHtml(r.address||'')}</p><small>${escapeHtml(r.score_reason||'')}</small><div class="row-actions"><button class="btn call mini" onclick="openCall(${Number(r.id)})">Ara</button><a class="btn primary mini" target="_blank" onclick="markSent(${Number(r.id)})" href="${wa}">İlk WA</a><button class="btn secondary mini" onclick="openMessage(${Number(r.id)},'detail')">Detay</button><button class="btn secondary mini" onclick="openMessage(${Number(r.id)},'payment')">Ödeme</button><button class="btn ghost mini" onclick="openMessage(${Number(r.id)},'followup')">Takip</button><button class="btn ghost mini" onclick="openMessage(${Number(r.id)},'tracking')">Takip Linki</button><a class="btn ghost mini" target="_blank" href="contract.php?lead_id=${Number(r.id)}">Sözleşme</a><a class="btn ghost mini" target="_blank" href="quote.php?id=${Number(r.id)}">Teklif</a>${maps}</div><div class="card-controls">${statusSelect(r.id, r.status)}</div><textarea class="note-input" placeholder="Not" onblur="updateNote(${Number(r.id)}, this.value)">${escapeHtml(r.note||'')}</textarea></article>`);
+function applyClientFilters(rows, f){
+  const today = new Date().toISOString().slice(0,10);
+  return rows.filter(r=>{
+    if(f.priority && (r.priority||'') !== f.priority) return false;
+    if(f.website==='no' && (r.website||'').trim()!=='') return false;
+    if(f.website==='yes' && (r.website||'').trim()==='') return false;
+    if(f.wa==='sent' && !(Number(r.message_count||0)>0)) return false;
+    if(f.wa==='not' && Number(r.message_count||0)>0) return false;
+    if(f.offer==='sent' && !(Number(r.offer_sent||0)>0)) return false;
+    if(f.offer==='not' && Number(r.offer_sent||0)>0) return false;
+    if(f.follow){ const nf=(r.next_followup_at||'').slice(0,10); if(f.follow==='today' && nf!==today) return false; if(f.follow==='overdue' && !(nf && nf<today)) return false; }
+    return true;
   });
 }
-function buildMessage(r){return `Merhaba, ${r.name} için yazıyorum. Google’da işletmenizi gördüm; telefon numaranız var ama web siteniz görünmüyor.\n\nSektörünüzde güçlü rakipler hizmet açıklamaları, güven veren görseller, Google Harita/konum, tek tık WhatsApp ve hızlı teklif/randevu alanları kullanıyor.\n\nBaşlangıç teklifimiz tek sayfalık HTML web sitesi için geçerlidir. En düşük paketimiz 4.999 TL’den başlıyor.\n\nUygun görürseniz bugün size sektörünüze uygun 2 örnek tasarım ve paket karşılaştırması göndereyim.\n\nİstemiyorsanız “istemiyorum” yazmanız yeterli, tekrar rahatsız etmeyiz.`;}
+async function loadLeads(showToast=false){
+  const f = currentFilters();
+  const qs = new URLSearchParams({q:f.q,status:f.status,min_score:f.min_score,city:f.city,sector:f.sector,assigned_to:f.assigned});
+  const d = await api(`api/leads.php?${qs.toString()}`);
+  let rows = d.leads || [];
+  rows = applyClientFilters(rows, f);
+  lastLeads = rows; renderLeads(rows);
+  const c=$('#leadCount'); if(c) c.textContent = `${rows.length} kayıt`;
+  if(showToast) toast(`${rows.length} kayıt listelendi.`);
+}
+function scoreClass(score){score=Number(score||0); return score>=80?'hot':score>=60?'warm':'cold';}
+function prioClass(p){return 'prio-'+String(p||'Ilık').toLowerCase().replace(/ç/g,'c').replace(/ı/g,'i').replace(/\s+/g,'-');}
+function digitalStatus(r){ const parts=[]; if((r.website||'').trim()==='') parts.push('Site yok'); else parts.push(r.website_quality||'Site var'); if(r.rating) parts.push('★'+r.rating); return parts.join(' · '); }
+function rowActions(r){
+  const maps = r.maps_url ? `<a href="${escapeHtml(r.maps_url)}" target="_blank">Harita</a>` : '';
+  return `<div class="row-actions">
+    <button class="btn wa mini" onclick="sendWhatsApp(${Number(r.id)},'first')">WhatsApp</button>
+    <button class="btn call mini" onclick="openCall(${Number(r.id)})">Ara</button>
+    <button class="btn secondary mini" onclick="openDetail(${Number(r.id)})">Detay</button>
+    <div class="action-more">
+      <button type="button" class="btn ghost mini action-more-btn" onclick="toggleActionMenu(this,event)">Diğer ▾</button>
+      <div class="action-menu">
+        <button onclick="sendWhatsApp(${Number(r.id)},'detail')">Teklif mesajı</button>
+        <button onclick="sendWhatsApp(${Number(r.id)},'payment')">Ödeme mesajı</button>
+        <button onclick="sendWhatsApp(${Number(r.id)},'followup')">Takip mesajı</button>
+        <button onclick="sendWhatsApp(${Number(r.id)},'tracking')">Takip linki</button>
+        <a href="contract.php?lead_id=${Number(r.id)}" target="_blank">Sözleşme</a>
+        <a href="quote.php?id=${Number(r.id)}" target="_blank">Teklif (A4)</a>
+        ${maps}
+      </div>
+    </div>
+  </div>`;
+}
+function toggleActionMenu(btn, ev){
+  ev.stopPropagation();
+  const wrap = btn.closest('.action-more');
+  const wasOpen = wrap.classList.contains('open');
+  $$('.action-more.open').forEach(w=>w.classList.remove('open'));
+  if(!wasOpen) wrap.classList.add('open');
+}
+document.addEventListener('click', ()=>$$('.action-more.open').forEach(w=>w.classList.remove('open')));
+function renderLeads(rows){
+  const tbody = $('#leadRows'); const cards = $('#mobileCards'); tbody.innerHTML=''; cards.innerHTML='';
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="11"><div class="empty-state"><div class="ico">📭</div>Kayıt yok. Filtreleri temizleyin ya da yeni lead toplayın.</div></td></tr>'; cards.innerHTML='<div class="empty-state"><div class="ico">📭</div>Kayıt yok.</div>'; return; }
+  rows.forEach(r => {
+    const sectorText = [r.sector, r.sub_sector].filter(Boolean).join(' / '); const regionText = [r.district, r.city].filter(Boolean).join(' / ');
+    const contact = r.contact_name ? `<small>${escapeHtml(r.contact_name)}${r.contact_position?' · '+escapeHtml(r.contact_position):''}</small>` : '';
+    const lastContact = (r.last_contact_at||'').slice(0,10) || '<span class="muted">—</span>';
+    const follow = (r.next_followup_at||'').slice(0,10) || '<span class="muted">—</span>';
+    tbody.insertAdjacentHTML('beforeend', `<tr>
+      <td><span class="score ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span><br><span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span></td>
+      <td><span class="biz-name">${escapeHtml(r.name)}</span>${contact}<small>${escapeHtml(r.address||'')}</small></td>
+      <td><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'')}</a></td>
+      <td>${escapeHtml(sectorText)}</td>
+      <td>${escapeHtml(regionText)}</td>
+      <td><small>${escapeHtml(digitalStatus(r))}</small></td>
+      <td>${statusSelect(r.id, r.status)}</td>
+      <td><small>${lastContact}</small></td>
+      <td><small>${follow}</small></td>
+      <td><small>${escapeHtml(r.assigned_to||'—')}</small></td>
+      <td>${rowActions(r)}</td>
+    </tr>`);
+    cards.insertAdjacentHTML('beforeend', `<article class="lead-card">
+      <div class="card-top"><h3>${escapeHtml(r.name)}</h3><span class="score ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></div>
+      <p>${escapeHtml(sectorText)} · ${escapeHtml(regionText)}</p>
+      <p><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'')}</a> <span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span></p>
+      <p class="muted">${escapeHtml(digitalStatus(r))}</p>
+      ${rowActions(r)}
+      <div class="card-controls">${statusSelect(r.id, r.status)}</div>
+    </article>`);
+  });
+}
 function statusSelect(id, val){
-  const statuses=['Aranmadı','WhatsApp gönderildi','Arandı','Cevap bekleniyor','Teklif istedi','Ödeme linki gönderildi','Ödeme bekleniyor','Kapora alındı','Müşteri oldu','İlgilenmedi','Tekrar aranmasın','Sipariş oluşturuldu','Tasarım hazırlanıyor','Yayında','Tamamlandı'];
+  const statuses = OPT.statuses || ['Aranmadı','WhatsApp gönderildi'];
   return `<select class="status-select" onchange="updateLead(${Number(id)}, {status:this.value})">${statuses.map(s=>`<option ${s===(val||'Aranmadı')?'selected':''}>${escapeHtml(s)}</option>`).join('')}</select>`;
 }
-async function updateLead(id, fields){ try{await api('api/update.php',{id,...fields}); toast('Güncellendi.'); await refreshStats();} catch(e){toast(e.message,'bad');} }
-async function updateNote(id, note){ await updateLead(id, {note}); }
-async function markSent(id){ try{await api('api/update.php',{id,status:'WhatsApp gönderildi'}); await refreshStats();}catch(e){} }
-async function markCalled(id){ try{await api('api/update.php',{id,status:'Arandı'}); await refreshStats(); await loadLeads(false);}catch(e){toast(e.message,'bad');} }
-async function openMessage(id, type){
-  try{const d=await api(`api/message.php?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`); window.open(d.whatsapp_url, '_blank'); if(type==='payment') await updateLead(id,{status:'Ödeme linki gönderildi'});}
-  catch(e){toast(e.message,'bad');}
-}
+async function updateLead(id, fields, silent){ try{await api('api/update.php',{id,...fields}); if(!silent) toast('Güncellendi.'); await loadLeads(false); await refreshStats();} catch(e){toast(e.message,'bad');} }
 
+/* ============ WhatsApp gönderimi (sağlam) ============ */
+function waToast(type){
+  const m={first:'WhatsApp açıldı ve lead “WhatsApp gönderildi” olarak işaretlendi.',detail:'Teklif mesajı açıldı ve işaretlendi.',payment:'Ödeme mesajı açıldı, durum “Ödeme linki gönderildi” yapıldı.',followup:'Takip mesajı açıldı ve kaydedildi.',tracking:'Takip linki açıldı ve kaydedildi.',contract:'Sözleşme mesajı açıldı.'};
+  return m[type]||'WhatsApp mesajı gönderildi olarak işaretlendi.';
+}
+async function sendWhatsApp(id, type='first'){
+  // Popup engeline takılmamak için pencereyi hemen (kullanıcı hareketiyle) aç
+  const win = window.open('', '_blank');
+  try{
+    const d = await api(`api/message.php?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`);
+    const url = d.whatsapp_url;
+    if(win && !win.closed){
+      win.location = url;
+      toast(waToast(type), 'ok');
+    } else {
+      try{ await navigator.clipboard.writeText(d.message||''); }catch(e){}
+      toast('WhatsApp açılamadı, mesaj panoya kopyalandı. WhatsApp’ı açıp yapıştırabilirsiniz.', 'warn');
+    }
+    // Sunucuda gönderildi olarak işaretle (durum + activity + message_count)
+    await api('api/whatsapp.php', {id, type});
+    await loadLeads(false); await refreshStats();
+    if(detailLeadId===Number(id)) await loadActivities(id);
+  }catch(e){ if(win && !win.closed) win.close(); toast(e.message,'bad'); }
+}
+async function markSentManual(id, type='manual'){ try{ await api('api/whatsapp.php',{id,type}); toast('Lead gönderildi olarak işaretlendi.','ok'); await loadLeads(false); await refreshStats(); if(detailLeadId===Number(id)) await loadActivities(id);}catch(e){toast(e.message,'bad');} }
+
+/* ============ Arama modalı ============ */
 let activeCallLeadId = null;
 async function openCall(id){
   try{
@@ -268,20 +369,152 @@ async function openCall(id){
   }catch(e){toast(e.message,'bad');}
 }
 function closeCallModal(){ $('#callModal')?.classList.add('hidden'); activeCallLeadId = null; }
-async function copyCallScript(){
-  const txt = $('#callScriptText')?.value || '';
-  if(!txt) return;
-  await navigator.clipboard.writeText(txt);
-  toast('Arama metni kopyalandı.');
+async function copyCallScript(){ const txt = $('#callScriptText')?.value || ''; if(!txt) return; await navigator.clipboard.writeText(txt); toast('Arama metni kopyalandı.'); }
+async function markCallStatus(status){ if(!activeCallLeadId) return; await updateLead(activeCallLeadId, {status}); if(status === 'Tekrar aranmasın') closeCallModal(); }
+async function startActualCall(){ if(activeCallLeadId){ try{await api('api/activities.php',{lead_id:activeCallLeadId,type:'call',title:'Telefonla arandı'}); await updateLead(activeCallLeadId,{status:'Arandı'},true);}catch(e){} } }
+
+/* ============ Lead detay modalı (sekmeli CRM) ============ */
+let detailLeadId = null;
+const DETAIL_TABS = [
+  {key:'genel', label:'Genel Bilgiler'},
+  {key:'dijital', label:'Dijital Analiz'},
+  {key:'ihtiyac', label:'İhtiyaçlar'},
+  {key:'satis', label:'Satış & Teklif'},
+  {key:'gecmis', label:'İletişim Geçmişi'},
+  {key:'sozlesme', label:'Sözleşme & Ödeme'},
+  {key:'notlar', label:'Notlar'}
+];
+function fld(label, name, val, type='text', opts){
+  val = val==null?'':val;
+  if(type==='select'){
+    const options=(opts||[]).map(o=>`<option ${String(o)===String(val)?'selected':''}>${escapeHtml(o)}</option>`).join('');
+    return `<div class="field"><label>${escapeHtml(label)}</label><select data-field="${name}"><option value=""></option>${options}</select></div>`;
+  }
+  if(type==='textarea'){ return `<div class="field full"><label>${escapeHtml(label)}</label><textarea data-field="${name}" rows="3">${escapeHtml(val)}</textarea></div>`; }
+  if(type==='readonly'){ return `<div class="field"><label>${escapeHtml(label)}</label><input value="${escapeHtml(val)}" readonly></div>`; }
+  return `<div class="field"><label>${escapeHtml(label)}</label><input type="${type}" data-field="${name}" value="${escapeHtml(val)}"></div>`;
 }
-async function markCallStatus(status){
-  if(!activeCallLeadId) return;
-  await updateLead(activeCallLeadId, {status});
-  if(status === 'Tekrar aranmasın') closeCallModal();
+function chk(label, name, val){ return `<label><input type="checkbox" data-field="${name}" ${Number(val)?'checked':''}> ${escapeHtml(label)}</label>`; }
+function buildDetailPane(key, r){
+  if(key==='genel') return `<div class="detail-grid">
+    ${fld('Firma adı','name',r.name)}
+    ${fld('Yetkili kişi','contact_name',r.contact_name)}
+    ${fld('Yetkili pozisyonu','contact_position',r.contact_position)}
+    ${fld('Öncelik','priority',r.priority,'select',OPT.priorities)}
+    ${fld('Telefon','phone',r.phone,'tel')}
+    ${fld('WhatsApp telefonu','whatsapp_phone',r.whatsapp_phone,'tel')}
+    ${fld('E-posta','email',r.email,'email')}
+    ${fld('Satış temsilcisi','assigned_to',r.assigned_to,'select',OPT.teamMembers)}
+    ${fld('Sektör','sector',r.sector)}
+    ${fld('Alt sektör','sub_sector',r.sub_sector)}
+    ${fld('Şehir','city',r.city)}
+    ${fld('İlçe','district',r.district)}
+    ${fld('Mahalle','neighborhood',r.neighborhood)}
+    ${fld('Kaynak','source','','readonly')}
+    ${fld('Açık adres','address',r.address,'textarea')}
+    ${fld('Google Maps linki','maps_url',r.maps_url,'textarea')}
+  </div>`;
+  if(key==='dijital') return `<div class="detail-grid">
+    ${fld('Web sitesi URL','website',r.website)}
+    ${fld('Web sitesi kalitesi','website_quality',r.website_quality,'select',OPT.websiteQualities)}
+    ${fld('Instagram','instagram',r.instagram)}
+    ${fld('Facebook','facebook',r.facebook)}
+    ${fld('Google puanı','rating',r.rating,'number')}
+    ${fld('Yorum sayısı','review_count',r.review_count,'number')}
+    ${fld('Rakip yoğunluğu','competitor_density',r.competitor_density,'select',OPT.competitorDensities)}
+    ${fld('Müşteri olma ihtimali (%)','close_probability',r.close_probability,'number')}
+    ${fld('Potansiyel skor','lead_score',r.lead_score,'readonly')}
+    ${fld('Skor nedeni','score_reason',r.score_reason,'readonly')}
+  </div>`;
+  if(key==='ihtiyac') return `<div class="detail-grid">
+    ${fld('İstenen hizmet','requested_service',r.requested_service,'select',OPT.services)}
+    </div><div class="check-grid" style="margin-top:12px">
+    ${chk('Domain var','has_domain',r.has_domain)}
+    ${chk('Hosting var','has_hosting',r.has_hosting)}
+    ${chk('Logo var','has_logo',r.has_logo)}
+    ${chk('Fotoğraf/görsel var','has_photos',r.has_photos)}
+    ${chk('İçerik hazır','has_content',r.has_content)}
+    ${chk('Çok dil gerekli','need_multilang',r.need_multilang)}
+    ${chk('Randevu sistemi','need_appointment',r.need_appointment)}
+    ${chk('Online ödeme','need_online_payment',r.need_online_payment)}
+    ${chk('Blog / haber','need_blog',r.need_blog)}
+    ${chk('Referans / galeri','need_gallery',r.need_gallery)}
+  </div>`;
+  if(key==='satis') return `<div class="detail-grid">
+    ${fld('Paket türü','package_type',packageLabelOf(r.package_type),'readonly')}
+    ${fld('Tahmini teklif tutarı','estimated_amount',r.estimated_amount,'number')}
+    ${fld('Net teklif tutarı','net_amount',r.net_amount,'number')}
+    ${fld('İndirim','discount_amount',r.discount_amount,'number')}
+    ${fld('Kapora tutarı','deposit_amount',r.deposit_amount,'number')}
+    ${fld('Sipariş tutarı (ciro)','order_amount',r.order_amount,'number')}
+    ${fld('Alınan ödeme','amount_paid',r.amount_paid,'number')}
+    ${fld('Ödeme durumu','payment_status',r.payment_status,'select',OPT.paymentStatuses)}
+    ${fld('Teklif gönderim tarihi','offer_sent_at',(r.offer_sent_at||'').slice(0,10),'date')}
+    ${fld('Sonraki takip tarihi','next_followup_at',(r.next_followup_at||'').slice(0,10),'date')}
+    ${fld('Son iletişim','last_contact_at',(r.last_contact_at||'').slice(0,16).replace('T',' '),'readonly')}
+  </div>`;
+  if(key==='gecmis') return `<div class="activity-add"><input id="activityNote" placeholder="Not / görüşme ekle..."><button class="btn primary" onclick="addActivity()">Ekle</button></div><div id="activityTimeline" class="activity-timeline"><div class="loading-row">Yükleniyor...</div></div>`;
+  if(key==='sozlesme') return `<div class="detail-grid">
+    ${fld('Sözleşme durumu','contract_status',r.contract_status)}
+    ${fld('Sipariş durumu','order_status',r.order_status,'select',OPT.orderStatuses)}
+    ${fld('Başlangıç','start_date',(r.start_date||'').slice(0,10),'date')}
+    ${fld('Tahmini teslim','estimated_delivery_date',(r.estimated_delivery_date||'').slice(0,10),'date')}
+    ${fld('Gerçek teslim','actual_delivery_date',(r.actual_delivery_date||'').slice(0,10),'date')}
+    ${fld('Domain adı','domain_name',r.domain_name)}
+    ${fld('Domain bitiş','domain_expiry_date',(r.domain_expiry_date||'').slice(0,10),'date')}
+    ${fld('Hosting bitiş','hosting_expiry_date',(r.hosting_expiry_date||'').slice(0,10),'date')}
+    ${fld('Yenileme ücreti','renewal_fee',r.renewal_fee,'number')}
+    <div class="field full"><label>İşlemler</label><div class="row-actions"><a class="btn secondary mini" href="contract.php?lead_id=${Number(r.id)}" target="_blank">Sözleşme aç</a><a class="btn ghost mini" href="quote.php?id=${Number(r.id)}" target="_blank">Teklif (A4)</a></div></div>
+  </div>`;
+  if(key==='notlar') return `<div class="detail-grid">${fld('Notlar','note',r.note,'textarea')}</div>`;
+  return '';
 }
-async function startActualCall(){
-  if(activeCallLeadId) await markCalled(activeCallLeadId);
+function packageLabelOf(key){ return (OPT.packages||{})[key] || key || ''; }
+async function openDetail(id){
+  const r = lastLeads.find(x=>Number(x.id)===Number(id));
+  if(!r) return toast('Lead bulunamadı.','bad');
+  detailLeadId = Number(id);
+  $('#detailTitle').textContent = r.name || 'Lead Detayı';
+  $('#detailSub').textContent = [r.sector,r.sub_sector].filter(Boolean).join(' / ') + ' · ' + [r.district,r.city].filter(Boolean).join(' / ');
+  $('#detailTabs').innerHTML = DETAIL_TABS.map((t,i)=>`<button type="button" class="tab-btn ${i===0?'active':''}" data-tab="${t.key}" onclick="switchTab('${t.key}')">${escapeHtml(t.label)}</button>`).join('');
+  $('#detailBody').innerHTML = DETAIL_TABS.map((t,i)=>`<div class="tab-pane ${i===0?'active':''}" data-pane="${t.key}">${buildDetailPane(t.key, r)}</div>`).join('');
+  $('#detailModal').classList.remove('hidden');
 }
+function switchTab(key){
+  $$('#detailTabs .tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===key));
+  $$('#detailBody .tab-pane').forEach(p=>p.classList.toggle('active', p.dataset.pane===key));
+  if(key==='gecmis' && detailLeadId) loadActivities(detailLeadId);
+}
+function closeDetail(){ $('#detailModal')?.classList.add('hidden'); detailLeadId=null; }
+async function saveDetail(){
+  if(!detailLeadId) return;
+  const fields = {};
+  $$('#detailBody [data-field]').forEach(el=>{
+    if(el.hasAttribute('readonly')) return;
+    if(el.type==='checkbox') fields[el.dataset.field] = el.checked ? 1 : 0;
+    else fields[el.dataset.field] = el.value;
+  });
+  try{ await api('api/update.php',{id:detailLeadId, ...fields}); toast('Lead güncellendi.','ok'); await loadLeads(false); await refreshStats(); closeDetail(); }
+  catch(e){ toast(e.message,'bad'); }
+}
+async function loadActivities(id){
+  const box = $('#activityTimeline'); if(!box) return;
+  try{
+    const d = await api(`api/activities.php?lead_id=${encodeURIComponent(id)}`);
+    const acts = d.activities || [];
+    if(!acts.length){ box.innerHTML='<div class="empty-state"><div class="ico">🕔</div>Henüz iletişim kaydı yok.</div>'; return; }
+    const icon={whatsapp:'💬',status_change:'🔄',call:'📞',note:'📝',payment:'💳',contract:'📄',offer:'📌'};
+    box.innerHTML = acts.map(a=>`<div class="activity-item"><div class="activity-dot ${escapeHtml(a.type)}">${icon[a.type]||'•'}</div><div class="activity-body"><b>${escapeHtml(a.title||a.type)}</b>${a.message?`<p>${escapeHtml(a.message)}</p>`:''}<time>${escapeHtml((a.created_at||'').replace('T',' '))} · ${escapeHtml(a.created_by||'')}</time></div></div>`).join('');
+  }catch(e){ box.innerHTML='<div class="empty-state">Geçmiş yüklenemedi.</div>'; }
+}
+async function addActivity(){
+  if(!detailLeadId) return;
+  const inp = $('#activityNote'); const msg=(inp?.value||'').trim(); if(!msg) return;
+  try{ await api('api/activities.php',{lead_id:detailLeadId,type:'note',title:'Not eklendi',message:msg}); inp.value=''; await loadActivities(detailLeadId); toast('Not eklendi.','ok'); }
+  catch(e){ toast(e.message,'bad'); }
+}
+
+/* ============ CSV import ============ */
 async function importCsv(e){
   e.preventDefault();
   const file = $('#csvFile')?.files?.[0];
@@ -290,7 +523,7 @@ async function importCsv(e){
   fd.append('csrf', window.LEAD_APP.csrf);
   const res = await fetch('api/import.php', {method:'POST', credentials:'same-origin', body:fd, headers:{'Accept':'application/json'}});
   const txt = await res.text(); let data;
-  try { data = JSON.parse(txt); } catch(err) { throw new Error('İçe aktarma sunucudan okunamayan cevap aldı: '+txt.slice(0,250)); }
+  try { data = JSON.parse(txt); } catch(err) { return toast('İçe aktarma sunucudan okunamayan cevap aldı: '+txt.slice(0,180),'bad'); }
   if(!res.ok || data.ok===false) return toast(data.error || 'CSV içe aktarma başarısız.', 'bad');
   const box = $('#importResult');
   box.classList.remove('hidden');
@@ -299,31 +532,42 @@ async function importCsv(e){
   await loadLeads(false); await refreshStats();
 }
 
-async function copyMsg(id){ const r = lastLeads.find(x=>Number(x.id)===Number(id)); if(!r) return; const msg = r.whatsapp_message || buildMessage(r); await navigator.clipboard.writeText(msg); toast('Mesaj kopyalandı.'); }
+/* ============ Ayarlar ============ */
 async function saveSettings(){
   try{
     const google_api_key = $('#googleKeyInput')?.value || '';
     const payment_settings = {iban:$('#ibanInput')?.value||'', account_holder:$('#holderInput')?.value||'', bank_name:$('#bankInput')?.value||'', payment_note:$('#paymentNoteInput')?.value||''};
     const operation_settings = {default_revision_limit:$('#revisionLimitInput')?.value||2, default_delivery_days:$('#deliveryDaysInput')?.value||7, renewal_warning_days:$('#renewalWarnInput')?.value||60};
     const d = await api('api/settings.php', {package_prices: packagePriceMap(), google_api_key, payment_settings, operation_settings});
-    packagePrices = d.package_prices || packagePriceMap(); if(d.team_members) teamMembers=d.team_members; toast('Ayarlar kaydedildi.');
+    packagePrices = d.package_prices || packagePriceMap(); if(d.team_members) teamMembers=d.team_members; toast('Ayarlar kaydedildi.','ok');
+  }catch(e){toast(e.message,'bad');}
+}
+async function saveTemplates(){
+  try{
+    const message_templates = {};
+    $$('#templateGrid [data-template]').forEach(t=>{ message_templates[t.dataset.template] = t.value; });
+    await api('api/settings.php', {message_templates});
+    toast('Mesaj şablonları kaydedildi.','ok');
   }catch(e){toast(e.message,'bad');}
 }
 async function loadSettings(){
-  try{const d=await api('api/settings.php'); const ps=d.payment_settings||{}, os=d.operation_settings||{}; if($('#ibanInput')) $('#ibanInput').value=ps.iban||''; if($('#holderInput')) $('#holderInput').value=ps.account_holder||'Xtanbul Yazılım Agent'; if($('#bankInput')) $('#bankInput').value=ps.bank_name||''; if($('#paymentNoteInput')) $('#paymentNoteInput').value=ps.payment_note||''; if($('#revisionLimitInput')) $('#revisionLimitInput').value=os.default_revision_limit||2; if($('#deliveryDaysInput')) $('#deliveryDaysInput').value=os.default_delivery_days||7; if($('#renewalWarnInput')) $('#renewalWarnInput').value=os.renewal_warning_days||60;}catch(e){}
+  try{const d=await api('api/settings.php'); const ps=d.payment_settings||{}, os=d.operation_settings||{};
+    if($('#ibanInput')) $('#ibanInput').value=ps.iban||''; if($('#holderInput')) $('#holderInput').value=ps.account_holder||'Xtanbul Yazılım Agent'; if($('#bankInput')) $('#bankInput').value=ps.bank_name||''; if($('#paymentNoteInput')) $('#paymentNoteInput').value=ps.payment_note||'';
+    if($('#revisionLimitInput')) $('#revisionLimitInput').value=os.default_revision_limit||2; if($('#deliveryDaysInput')) $('#deliveryDaysInput').value=os.default_delivery_days||7; if($('#renewalWarnInput')) $('#renewalWarnInput').value=os.renewal_warning_days||60;
+  }catch(e){}
 }
 async function changePassword(){
-  try{const d=await api('api/account.php',{action:'password',email:$('#newAdminEmail')?.value||'',current_password:$('#currentPassword')?.value||'',new_password:$('#newPassword')?.value||''}); if(d.ok) toast('Admin bilgisi güncellendi.'); else toast(d.error||'Güncellenemedi','bad');}
+  try{const d=await api('api/account.php',{action:'password',email:$('#newAdminEmail')?.value||'',current_password:$('#currentPassword')?.value||'',new_password:$('#newPassword')?.value||''}); if(d.ok) toast('Admin bilgisi güncellendi.','ok'); else toast(d.error||'Güncellenemedi','bad');}
   catch(e){toast(e.message,'bad');}
 }
-window.updateLead=updateLead; window.updateNote=updateNote; window.openMessage=openMessage; window.openCall=openCall; window.closeCallModal=closeCallModal; window.copyMsg=copyMsg; window.markSent=markSent; window.markCalled=markCalled;
 
-
+/* ============ Navigasyon / sidebar ============ */
 function activatePanel(hash){
   const target = hash && document.querySelector(hash) ? hash : '#dashboardPanel';
   $$('.panel-section').forEach(sec=>sec.classList.toggle('active', '#'+sec.id === target));
   $$('[data-panel-nav]').forEach(a=>a.classList.toggle('active', a.getAttribute('href') === target));
   if(location.hash !== target) history.replaceState(null,'',target);
+  closeSidebar();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function initPanelNavigation(){
@@ -331,6 +575,10 @@ function initPanelNavigation(){
   $$('[data-jump]').forEach(b=>b.addEventListener('click', ()=>activatePanel(b.dataset.jump)));
   activatePanel(location.hash || '#dashboardPanel');
 }
+function openSidebar(){ document.body.classList.add('sidebar-open'); }
+function closeSidebar(){ document.body.classList.remove('sidebar-open'); }
+
+window.updateLead=updateLead; window.openDetail=openDetail; window.closeDetail=closeDetail; window.switchTab=switchTab; window.sendWhatsApp=sendWhatsApp; window.markSentManual=markSentManual; window.openCall=openCall; window.closeCallModal=closeCallModal; window.toggleActionMenu=toggleActionMenu; window.addActivity=addActivity;
 
 document.addEventListener('DOMContentLoaded',()=>{
   initPanelNavigation();
@@ -341,7 +589,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#refreshStats')?.addEventListener('click', refreshStats);
   $('#refreshStatsTop')?.addEventListener('click', refreshStats);
   $('#saveSettings')?.addEventListener('click', saveSettings);
+  $('#saveTemplates')?.addEventListener('click', saveTemplates);
   $('#changePasswordBtn')?.addEventListener('click', changePassword);
+  $('#detailSave')?.addEventListener('click', saveDetail);
   loadSettings();
   $('#csvImportForm')?.addEventListener('submit', importCsv);
   $('#clearImportResult')?.addEventListener('click', ()=>$('#importResult')?.classList.add('hidden'));
@@ -351,9 +601,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#markOfferBtn')?.addEventListener('click', ()=>markCallStatus('Teklif istedi'));
   $('#markNoCallBtn')?.addEventListener('click', ()=>markCallStatus('Tekrar aranmasın'));
   $('#callModal')?.addEventListener('click', (e)=>{ if(e.target.id==='callModal') closeCallModal(); });
-  $('#quickSearch')?.addEventListener('input', ()=>{clearTimeout(window.__q); window.__q=setTimeout(()=>loadLeads(false),300);});
-  $('#statusFilter')?.addEventListener('change', ()=>loadLeads(false));
-  $('#scoreFilter')?.addEventListener('change', ()=>loadLeads(false));
+  $('#detailModal')?.addEventListener('click', (e)=>{ if(e.target.id==='detailModal') closeDetail(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeCallModal(); closeDetail(); closeSidebar(); } });
+  // filtreler
+  const reload=()=>loadLeads(false);
+  $('#quickSearch')?.addEventListener('input', ()=>{clearTimeout(window.__q); window.__q=setTimeout(reload,300);});
+  $('#topSearch')?.addEventListener('input', ()=>{clearTimeout(window.__q2); window.__q2=setTimeout(reload,300);});
+  ['statusFilter','scoreFilter','cityFilter','sectorFilter','priorityFilter','assignedFilter','websiteFilter','waFilter','offerFilter','followFilter'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener(el.tagName==='INPUT'?'input':'change', ()=>{clearTimeout(window.__qf); window.__qf=setTimeout(reload,250);}); });
+  $('#clearFilters')?.addEventListener('click', ()=>{ ['statusFilter','scoreFilter','cityFilter','sectorFilter','priorityFilter','assignedFilter','websiteFilter','waFilter','offerFilter','followFilter','quickSearch'].forEach(id=>{const el=$('#'+id); if(el) el.value='';}); reload(); });
+  // sidebar drawer
+  $('#sidebarToggle')?.addEventListener('click', openSidebar);
+  $('#sidebarOverlay')?.addEventListener('click', closeSidebar);
   refreshStats();
   loadLeads(false).catch(e=>toast(e.message,'bad'));
 });

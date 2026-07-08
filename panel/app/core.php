@@ -199,6 +199,51 @@ function bootstrap_app(): void {
     ensure_column($m, 'leads', 'renewal_fee', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
     ensure_column($m, 'leads', 'payment_receipt_file', 'VARCHAR(255) NULL');
 
+    // --- v5 CRM derinleştirme kolonları (güvenli migration, eski veri korunur) ---
+    ensure_column($m, 'leads', 'contact_name', 'VARCHAR(190) NULL');
+    ensure_column($m, 'leads', 'contact_position', 'VARCHAR(120) NULL');
+    ensure_column($m, 'leads', 'whatsapp_phone', 'VARCHAR(80) NULL');
+    ensure_column($m, 'leads', 'email', 'VARCHAR(190) NULL');
+    ensure_column($m, 'leads', 'neighborhood', 'VARCHAR(160) NULL');
+    ensure_column($m, 'leads', 'instagram', 'VARCHAR(190) NULL');
+    ensure_column($m, 'leads', 'facebook', 'VARCHAR(190) NULL');
+    ensure_column($m, 'leads', 'website_quality', 'VARCHAR(60) NULL');
+    ensure_column($m, 'leads', 'competitor_density', 'VARCHAR(40) NULL');
+    ensure_column($m, 'leads', 'priority', "VARCHAR(20) NOT NULL DEFAULT 'Ilık'");
+    ensure_column($m, 'leads', 'close_probability', 'INT NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'requested_service', 'VARCHAR(120) NULL');
+    ensure_column($m, 'leads', 'has_domain', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'has_hosting', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'has_logo', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'has_photos', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'has_content', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'need_multilang', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'need_appointment', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'need_online_payment', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'need_blog', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'need_gallery', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'estimated_amount', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'net_amount', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'discount_amount', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'deposit_amount', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'offer_sent', 'TINYINT(1) NOT NULL DEFAULT 0');
+    ensure_column($m, 'leads', 'offer_sent_at', 'DATETIME NULL');
+
+    $m->query("CREATE TABLE IF NOT EXISTS lead_activities (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        lead_id INT UNSIGNED NOT NULL,
+        type VARCHAR(40) NOT NULL DEFAULT 'note',
+        title VARCHAR(190) NULL,
+        message TEXT NULL,
+        old_status VARCHAR(80) NULL,
+        new_status VARCHAR(80) NULL,
+        created_by VARCHAR(190) NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_lead (lead_id),
+        KEY idx_type (type),
+        KEY idx_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $m->query("CREATE TABLE IF NOT EXISTS contracts (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         lead_id INT UNSIGNED NOT NULL,
@@ -346,6 +391,7 @@ function seed_default_settings(): void {
         'contract_terms' => default_contract_terms(),
         'payment_settings' => default_payment_settings(),
         'operation_settings' => default_operation_settings(),
+        'message_templates' => default_message_templates(),
     ];
     foreach ($defaults as $k => $v) {
         $exists = $m->query("SELECT key_name FROM app_settings WHERE key_name='".$m->real_escape_string($k)."' LIMIT 1");
@@ -681,26 +727,172 @@ function get_lead(int $id): ?array {
     return null;
 }
 
-function update_lead_fields(int $id, array $fields): bool {
-    $allowed = ['status','note','assigned_to','next_followup_at','last_contact_at','package_type','package_price','whatsapp_message','customer_name','customer_title','customer_tax_info','customer_address','order_amount','amount_paid','payment_status','order_status','tracking_token','contract_status','written_approval','signed_by_company','signed_by_customer','extra_items_json','contract_no','start_date','estimated_delivery_date','actual_delivery_date','revision_limit','revision_used','domain_owner','domain_provider','domain_name','domain_expiry_date','hosting_provider','hosting_expiry_date','renewal_fee','payment_receipt_file'];
+function lead_editable_columns(): array {
+    return ['status','note','assigned_to','next_followup_at','last_contact_at','package_type','package_price','whatsapp_message','customer_name','customer_title','customer_tax_info','customer_address','order_amount','amount_paid','payment_status','order_status','tracking_token','contract_status','written_approval','signed_by_company','signed_by_customer','extra_items_json','contract_no','start_date','estimated_delivery_date','actual_delivery_date','revision_limit','revision_used','domain_owner','domain_provider','domain_name','domain_expiry_date','hosting_provider','hosting_expiry_date','renewal_fee','payment_receipt_file',
+        // v5 CRM alanları
+        'name','sector','sub_sector','city','district','address','phone','website','maps_url','rating','review_count','lead_score','score_reason',
+        'contact_name','contact_position','whatsapp_phone','email','neighborhood','instagram','facebook','website_quality','competitor_density','priority','close_probability','requested_service',
+        'has_domain','has_hosting','has_logo','has_photos','has_content','need_multilang','need_appointment','need_online_payment','need_blog','need_gallery',
+        'estimated_amount','net_amount','discount_amount','deposit_amount','offer_sent','offer_sent_at'];
+}
+function update_lead_fields(int $id, array $fields, ?string $actor = null): bool {
+    $allowed = lead_editable_columns();
+    // Durum değişimini activity log'a düşürmek için eski durumu al
+    $logStatus = array_key_exists('status', $fields);
+    $oldStatus = '';
+    if ($logStatus) { $prev = get_lead($id); $oldStatus = (string)($prev['status'] ?? ''); }
     $m = db();
     if ($m) {
         $sets=[]; $vals=[]; $types='';
         foreach ($fields as $k=>$v) if (in_array($k,$allowed,true)) { $sets[]="{$k}=?"; $vals[]=(string)$v; $types.='s'; }
         if (!$sets) return false;
         $sets[] = 'updated_at=NOW()';
-        if (($fields['status'] ?? '') === 'WhatsApp gönderildi') { $sets[]='last_contact_at=NOW()'; $sets[]='message_count=message_count+1'; }
         $sql='UPDATE leads SET '.implode(',', $sets).' WHERE id=?'; $types.='i'; $vals[]=$id;
         $stmt=$m->prepare($sql); if(!$stmt) return false; $stmt->bind_param($types, ...$vals); $ok=$stmt->execute(); $stmt->close();
         if (($fields['status'] ?? '') === 'Tekrar aranmasın') { $lead=get_lead($id); if ($lead) add_blacklist_phone((string)($lead['phone'] ?? ''), 'Kullanıcı tekrar aranmasın yaptı'); }
+        if ($ok && $logStatus && (string)$fields['status'] !== $oldStatus) {
+            log_activity($id, 'status_change', 'Durum güncellendi', ($oldStatus?:'—').' → '.(string)$fields['status'], $oldStatus, (string)$fields['status'], $actor);
+        }
         return $ok;
     }
     ensure_data_files(); $path=__DIR__.'/../data/leads.json'; $list=json_decode((string)@file_get_contents($path), true) ?: []; $ok=false;
     foreach ($list as &$r) if ((int)($r['id'] ?? 0)===$id) { foreach($fields as $k=>$v) if(in_array($k,$allowed,true)) $r[$k]=$v; $r['updated_at']=date('Y-m-d H:i:s'); $ok=true; if (($fields['status'] ?? '')==='Tekrar aranmasın') add_blacklist_phone((string)($r['phone']??''),'Kullanıcı tekrar aranmasın yaptı'); }
-    @file_put_contents($path, json_encode($list, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)); return $ok;
+    @file_put_contents($path, json_encode($list, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    if ($ok && $logStatus && (string)$fields['status'] !== $oldStatus) log_activity($id, 'status_change', 'Durum güncellendi', ($oldStatus?:'—').' → '.(string)$fields['status'], $oldStatus, (string)$fields['status'], $actor);
+    return $ok;
 }
 
+function bump_message_count(int $id): void {
+    $m = db();
+    if ($m) { $m->query('UPDATE leads SET message_count=message_count+1, last_contact_at=NOW() WHERE id='.max(1,$id)); return; }
+    ensure_data_files(); $path=__DIR__.'/../data/leads.json'; $list=json_decode((string)@file_get_contents($path), true) ?: [];
+    foreach ($list as &$r) if ((int)($r['id'] ?? 0)===$id) { $r['message_count']=(int)($r['message_count']??0)+1; $r['last_contact_at']=date('Y-m-d H:i:s'); }
+    @file_put_contents($path, json_encode($list, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+}
+/**
+ * WhatsApp mesajı gönderildi olarak işaretle: message_count++, last_contact_at, activity log,
+ * ve gerektiğinde durumu ileri taşı (asla geri düşürmez).
+ */
+function mark_whatsapp_sent(int $id, string $type = 'first'): array {
+    $lead = get_lead($id);
+    if (!$lead) return ['ok'=>false,'error'=>'Lead bulunamadı.'];
+    $map = [
+        'first'    => ['status'=>'WhatsApp gönderildi', 'title'=>'İlk WhatsApp mesajı gönderildi'],
+        'manual'   => ['status'=>'WhatsApp gönderildi', 'title'=>'WhatsApp mesajı gönderildi olarak işaretlendi'],
+        'detail'   => ['status'=>'Teklif gönderildi',   'title'=>'Detaylı teklif mesajı gönderildi'],
+        'payment'  => ['status'=>'Ödeme linki gönderildi','title'=>'Ödeme / kapora mesajı gönderildi'],
+        'followup' => ['status'=>'',                     'title'=>'Takip mesajı gönderildi'],
+        'tracking' => ['status'=>'',                     'title'=>'Takip linki gönderildi'],
+        'contract' => ['status'=>'Sözleşme gönderildi',  'title'=>'Sözleşme mesajı gönderildi'],
+        'delivery' => ['status'=>'',                     'title'=>'Teslim / yayın mesajı gönderildi'],
+        'renewal'  => ['status'=>'',                     'title'=>'Yenileme hatırlatma mesajı gönderildi'],
+    ];
+    $cfg = $map[$type] ?? $map['first'];
+    bump_message_count($id);
+    $current = (string)($lead['status'] ?? '');
+    $target = $cfg['status'];
+    $newStatus = $current;
+    if ($target !== '') {
+        $order = lead_pipeline_statuses();
+        $ci = array_search($current, $order, true);
+        $ti = array_search($target, $order, true);
+        // İleri seviyedeki lead'i geri düşürme
+        if ($ti !== false && ($ci === false || $ti > $ci)) {
+            update_lead_fields($id, ['status'=>$target]); // status_change activity'yi kendisi loglar
+            $newStatus = $target;
+        }
+    }
+    // Ödeme/teklif için ek işaretler
+    if ($type === 'detail') update_lead_fields($id, ['offer_sent'=>'1','offer_sent_at'=>date('Y-m-d H:i:s')]);
+    log_activity($id, 'whatsapp', $cfg['title'], (string)($lead['name'] ?? ''), $current, $newStatus);
+    return ['ok'=>true,'status'=>$newStatus,'message_count'=>(int)($lead['message_count'] ?? 0)+1];
+}
+
+/* ============ Aktivite / iletişim geçmişi ============ */
+function current_actor(): string {
+    start_app_session();
+    return (string)($_SESSION['user_email'] ?? 'sistem');
+}
+function log_activity(int $leadId, string $type, string $title, string $message = '', string $oldStatus = '', string $newStatus = '', ?string $actor = null): bool {
+    if ($leadId <= 0) return false;
+    $actor = $actor ?? current_actor();
+    $type = preg_replace('/[^a-z_]/', '', lead_lower($type)) ?: 'note';
+    $m = db();
+    if ($m) {
+        $stmt = $m->prepare('INSERT INTO lead_activities (lead_id, type, title, message, old_status, new_status, created_by) VALUES (?,?,?,?,?,?,?)');
+        if (!$stmt) return false;
+        $stmt->bind_param('issssss', $leadId, $type, $title, $message, $oldStatus, $newStatus, $actor);
+        $ok = $stmt->execute(); $stmt->close(); return $ok;
+    }
+    ensure_data_files();
+    $path = __DIR__ . '/../data/activities.json';
+    $list = json_decode((string)@file_get_contents($path), true); if (!is_array($list)) $list = [];
+    $list[] = ['id'=>count($list)+1,'lead_id'=>$leadId,'type'=>$type,'title'=>$title,'message'=>$message,'old_status'=>$oldStatus,'new_status'=>$newStatus,'created_by'=>$actor,'created_at'=>date('Y-m-d H:i:s')];
+    return (bool)@file_put_contents($path, json_encode($list, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+}
+function get_lead_activities(int $leadId, int $limit = 200): array {
+    $m = db();
+    if ($m) {
+        $leadId = max(1, $leadId);
+        $res = $m->query('SELECT * FROM lead_activities WHERE lead_id=' . $leadId . ' ORDER BY id DESC LIMIT ' . max(1, min(500, $limit)));
+        $rows = []; if ($res) while ($r = $res->fetch_assoc()) $rows[] = $r; return $rows;
+    }
+    ensure_data_files();
+    $list = json_decode((string)@file_get_contents(__DIR__ . '/../data/activities.json'), true); if (!is_array($list)) $list = [];
+    $list = array_values(array_filter($list, fn($r) => (int)($r['lead_id'] ?? 0) === $leadId));
+    usort($list, fn($a,$b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
+    return array_slice($list, 0, $limit);
+}
+
+function default_message_templates(): array {
+    return [
+        'first'   => "Merhaba {firma_adi}, işletmenizi Google'da gördüm. Web siteniz yoksa ya da mevcut siteniz yeterince müşteri kazandırmıyorsa; {sektor} sektörüne uygun, mobil uyumlu ve WhatsApp dönüşümlü bir web sitesi hazırlıyoruz.\n\nDilerseniz size 2 örnek tasarım ve {paket} paketi bilgisini gönderebilirim. Uygun mudur?",
+        'detail'  => "Merhaba {firma_adi}, size uygun paketi netleştireyim:\n\n{paket} — başlangıç {teklif_tutari}\n\nRandevu, çok sayfa, yönetim paneli ve çok dil ihtiyaca göre eklenir. İsterseniz sektörünüze uygun örnek tasarımı da göndereyim.",
+        'payment' => "Merhaba {firma_adi}, {paket} çalışmanız için süreci başlatabiliriz.\n\nToplam: {teklif_tutari}\nBaşlangıç kaporası: {kapora}\nKalan: {kalan_odeme}\n\nOnay verdiğinizde aynı gün tasarıma başlıyoruz.",
+        'followup'=> "Merhaba {firma_adi}, önceki mesajımı hatırlatmak istedim. Sektörünüze uygun kısa bir örnek tasarım ve net paket teklifini bugün gönderebilirim. İstemiyorsanız yazmanız yeterli, tekrar rahatsız etmeyiz.",
+        'tracking'=> "Merhaba {yetkili}, siparişiniz oluşturuldu. Süreci şu linkten takip edebilirsiniz:\n{takip_linki}",
+        'contract'=> "Merhaba {firma_adi}, hizmet sözleşmenizi ve teklif formunuzu hazırladık. Onayınız sonrası çalışmaya başlıyoruz. Sorularınız için buradan yazabilirsiniz.",
+        'delivery'=> "Merhaba {firma_adi}, web siteniz yayına hazır. Kontrol edip görüşlerinizi iletebilirsiniz. Teslim sonrası desteğimiz devam ediyor.",
+        'renewal' => "Merhaba {firma_adi}, web sitenizin domain/hosting yenileme dönemi yaklaşıyor. Kesintisiz devam için yenileme işlemini birlikte planlayalım.",
+    ];
+}
+function message_templates(): array {
+    $stored = setting_get('message_templates', []);
+    if (!is_array($stored)) $stored = [];
+    return array_merge(default_message_templates(), array_filter($stored, fn($v) => is_string($v) && trim($v) !== ''));
+}
+function money_tr($v): string { return number_format((float)$v, 0, ',', '.') . ' TL'; }
+function template_vars_for_lead(array $lead, array $extra = []): array {
+    $package = (string)($lead['package_type'] ?? 'onepage');
+    $order = (float)($lead['order_amount'] ?? 0);
+    $paid = (float)($lead['amount_paid'] ?? 0);
+    $deposit = (float)($lead['deposit_amount'] ?? 0);
+    $vars = [
+        '{firma_adi}' => (string)($lead['name'] ?? 'İşletmeniz'),
+        '{yetkili}' => (string)(($lead['contact_name'] ?? '') ?: ($lead['customer_name'] ?? '') ?: 'yetkili'),
+        '{sektor}' => (string)(($lead['sub_sector'] ?? '') ?: ($lead['sector'] ?? 'işletmeniz')),
+        '{ilce}' => (string)($lead['district'] ?? ''),
+        '{sehir}' => (string)($lead['city'] ?? ''),
+        '{paket}' => package_label($package),
+        '{teklif_tutari}' => $order > 0 ? money_tr($order) : (string)(($lead['package_price'] ?? '') ?: package_price($package)),
+        '{kapora}' => $deposit > 0 ? money_tr($deposit) : '%50 kapora',
+        '{kalan_odeme}' => money_tr(max(0, $order - $paid)),
+        '{satis_temsilcisi}' => (string)($lead['assigned_to'] ?? ''),
+        '{telefon}' => (string)($lead['phone'] ?? ''),
+        '{takip_linki}' => $extra['{takip_linki}'] ?? '',
+    ];
+    return array_merge($vars, $extra);
+}
+function render_template(string $tpl, array $vars): string {
+    return strtr($tpl, $vars);
+}
 function message_for_lead(array $lead, string $type = 'first'): string {
+    $templates = message_templates();
+    if (isset($templates[$type]) && trim((string)$templates[$type]) !== '') {
+        $extra = [];
+        if ($type === 'tracking') $extra['{takip_linki}'] = tracking_url_for_lead($lead);
+        return render_template((string)$templates[$type], template_vars_for_lead($lead, $extra));
+    }
     $name = (string)($lead['name'] ?? 'İşletmeniz'); $sector=(string)($lead['sector'] ?? ''); $sub=(string)($lead['sub_sector'] ?? '');
     $package = (string)($lead['package_type'] ?? 'onepage'); $price = (string)($lead['package_price'] ?? package_price($package));
     $packageLabel = package_label($package);
@@ -946,6 +1138,72 @@ function record_payment(array $d): array {
     $stmt=$m->prepare('INSERT INTO payments (lead_id,contract_id,amount,method,note,receipt_file) VALUES (?,?,?,?,?,?)'); if(!$stmt)return ['ok'=>false,'error'=>$m->error]; $stmt->bind_param('iidsss',$leadId,$contractId,$amount,$method,$note,$file); $ok=$stmt->execute(); $stmt->close();
     if($ok){ $newPaid=(float)($lead['amount_paid'] ?? 0)+$amount; $status=$newPaid >= (float)($lead['order_amount'] ?? 0) && (float)($lead['order_amount'] ?? 0)>0 ? 'Ödendi' : 'Kısmi ödeme alındı'; update_lead_fields($leadId,['amount_paid'=>(string)$newPaid,'payment_status'=>$status,'payment_receipt_file'=>$file]); }
     return ['ok'=>$ok];
+}
+
+/* ============ Pipeline / seçenek listeleri ============ */
+function lead_pipeline_statuses(): array {
+    return ['Aranmadı','Uygunluk kontrolü','WhatsApp gönderildi','Cevap bekleniyor','Arandı','Teklif istedi','Teklif hazırlanıyor','Teklif gönderildi','Pazarlıkta','Ödeme linki gönderildi','Ödeme bekleniyor','Kapora alındı','Sözleşme gönderildi','Sözleşme onaylandı','Proje başladı','Tasarım hazırlanıyor','Revizede','Yayına hazır','Yayında','Tamamlandı','Müşteri oldu','İlgilenmedi','Tekrar aranmasın','Kara liste'];
+}
+function priority_options(): array { return ['Soğuk','Ilık','Sıcak','Çok sıcak']; }
+function website_quality_options(): array { return ['Yok','Var ama zayıf','Mobil kötü','Yavaş','SEO zayıf','Güncel değil','İyi']; }
+function competitor_density_options(): array { return ['Düşük','Orta','Yüksek','Çok yüksek']; }
+function requested_service_options(): array {
+    return ['Tek sayfa web sitesi','Randevulu web sitesi','Çok sayfalı kurumsal site','Yönetim panelli site','E-ticaret','SEO','Reklam danışmanlığı','Sosyal medya danışmanlığı','Özel yazılım'];
+}
+
+/* ============ Ön yüz teklif formu → lead ============ */
+function create_public_lead(array $in): array {
+    // Bot koruması: honeypot dolu ise sessizce başarı dön
+    if (trim((string)($in['company_site'] ?? '')) !== '') return ['ok'=>true,'skipped'=>true];
+    $name = trim((string)($in['company'] ?? $in['name'] ?? ''));
+    $person = trim((string)($in['person'] ?? ''));
+    $phone = trim((string)($in['phone'] ?? ''));
+    $email = trim((string)($in['email'] ?? ''));
+    if ($name === '' && $person === '') return ['ok'=>false,'error'=>'Lütfen ad soyad veya firma adı girin.'];
+    if ($phone === '' && $email === '') return ['ok'=>false,'error'=>'Telefon veya e-posta girmelisiniz.'];
+    if (empty($in['kvkk'])) return ['ok'=>false,'error'=>'Devam etmek için KVKK onayı gerekli.'];
+    $displayName = $name !== '' ? $name : $person;
+    $lead = [
+        'place_id' => 'web-'.substr(bin2hex(random_bytes(6)),0,12),
+        'name' => $displayName,
+        'sector' => trim((string)($in['sector'] ?? 'Web Formu')),
+        'sub_sector' => trim((string)($in['service'] ?? '')),
+        'city' => trim((string)($in['city'] ?? '')),
+        'district' => trim((string)($in['district'] ?? '')),
+        'address' => '',
+        'phone' => $phone,
+        'website' => trim((string)($in['website'] ?? '')),
+        'maps_url' => '',
+        'rating' => null,
+        'review_count' => null,
+        'source' => 'Web Formu',
+        'assigned_to' => '',
+        'package_type' => 'onepage',
+        'package_price' => package_price('onepage'),
+        'status' => 'Aranmadı',
+        'raw' => ['web_form'=>true,'budget'=>$in['budget'] ?? '','urgency'=>$in['urgency'] ?? ''],
+    ];
+    $res = save_lead($lead);
+    $id = (int)($res['id'] ?? 0);
+    if (empty($res['saved']) && !$id) {
+        return ['ok'=>false,'error'=>'Kayıt oluşturulamadı. Lütfen telefonla iletişime geçin.'];
+    }
+    if ($id) {
+        $note = trim((string)($in['message'] ?? ''));
+        $hasSite = trim((string)($in['has_website'] ?? ''));
+        $extraNote = 'Web formu talebi. Bütçe: '.trim((string)($in['budget'] ?? '-')).' · Aciliyet: '.trim((string)($in['urgency'] ?? '-')).($person? ' · Yetkili: '.$person:'').($hasSite? ' · Mevcut site: '.$hasSite:'');
+        update_lead_fields($id, [
+            'contact_name' => $person,
+            'email' => $email,
+            'whatsapp_phone' => $phone,
+            'requested_service' => trim((string)($in['service'] ?? '')),
+            'neighborhood' => trim((string)($in['district'] ?? '')),
+            'priority' => 'Sıcak',
+            'note' => $note ? ($note."\n".$extraNote) : $extraNote,
+        ], 'web-form');
+        log_activity($id, 'note', 'Web formundan geldi', $extraNote.($note? "\nMesaj: ".$note : ''), '', '', 'web-form');
+    }
+    return ['ok'=>true,'id'=>$id,'duplicate'=>!empty($res['duplicate'])];
 }
 
 bootstrap_app();
