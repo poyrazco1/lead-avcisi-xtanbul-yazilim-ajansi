@@ -72,6 +72,14 @@ else { header_html($page); }
   </div>
 </section>
 
+<!-- MARQUEE -->
+<section class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>WEB</span><i class="dot"></i><span class="o">SEO</span><i class="dot"></i><span>PANEL</span><i class="dot"></i><span class="o">E-TİCARET</span><i class="dot"></i><span>RANDEVU</span><i class="dot"></i><span class="o">KURUMSAL</span><i class="dot"></i><span>TASARIM</span><i class="dot"></i>
+    <span>WEB</span><i class="dot"></i><span class="o">SEO</span><i class="dot"></i><span>PANEL</span><i class="dot"></i><span class="o">E-TİCARET</span><i class="dot"></i><span>RANDEVU</span><i class="dot"></i><span class="o">KURUMSAL</span><i class="dot"></i><span>TASARIM</span><i class="dot"></i>
+  </div>
+</section>
+
 <!-- 2) HİZMETLER -->
 <section class="section">
   <div class="wrap">

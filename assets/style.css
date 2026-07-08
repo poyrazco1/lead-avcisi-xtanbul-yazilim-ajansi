@@ -1,29 +1,30 @@
 /* ============================================================
-   Xtanbul Yazılım — Ön Yüz Tasarım Sistemi (Premium / Editorial / Mono) v9
-   Not: Bu dosya admin.php ile paylaşılır. Alt bölümdeki ".admin*" ve
-   ".adm-*" kuralları ile onların CSS değişkenleri KORUNMUŞTUR.
+   Xtanbul Yazılım — Ön Yüz Tasarım Sistemi (Dark / Studio / Lime) v10
+   Not: Bu dosya admin.php ile paylaşılır. Admin AÇIK tema olarak korunur:
+   ".admin*"/".adm-*" kuralları + body.admin-login-page/body.adm-body
+   üzerinde --ink override'ı ile admin arayüzü etkilenmez.
    ============================================================ */
 :root{
-  /* ---- Ön yüz tasarım token'ları (yeni, premium mono sistem) ---- */
-  --paper:#f4f2ee;                   /* kırık beyaz arka plan */
-  --paper-2:#faf9f6;                 /* daha açık yüzey */
-  --card:#ffffff;                    /* kart arka planı */
-  --card-2:#efece5;                  /* çok açık gri dolgu / alt section */
-  --ink:#17150f;                     /* siyaha yakın ana metin */
-  --ink-2:#3a382f;                   /* güçlü ikincil başlık */
-  --sub:#736e63;                     /* ikincil / gri metin */
-  --hair:#e5e1d7;                    /* soft gri border */
-  --hair-2:#d6d1c4;                  /* biraz koyu border */
-  --pop:#2743d6;                     /* markaya uygun tek accent (çok az kullanılır) */
-  --pop-soft:#eceffb;
-  --shell:1200px;                    /* maksimum container genişliği */
-  --section-y:clamp(72px,9vw,124px); /* section dikey boşluğu (mobil↔masaüstü) */
+  /* ---- Ön yüz tasarım token'ları (Dark / Studio / Lime sistem) ---- */
+  --paper:#0b0d0a;                   /* siyaha yakın ana arka plan */
+  --paper-2:#12140f;                 /* hafif yükseltilmiş yüzey / input */
+  --card:#151812;                    /* kart arka planı */
+  --card-2:#0f120d;                  /* alt section dolgusu */
+  --ink:#f3f5ef;                     /* ana açık metin */
+  --ink-2:#c5c9be;                   /* güçlü ikincil metin */
+  --sub:#8b8f83;                     /* ikincil / gri metin */
+  --hair:rgba(255,255,255,.09);      /* soft border */
+  --hair-2:rgba(255,255,255,.17);    /* biraz belirgin border */
+  --pop:#c8f13a;                     /* tek accent — lime/neon yeşil */
+  --pop-soft:rgba(200,241,58,.12);
+  --shell:1240px;                    /* maksimum container genişliği */
+  --section-y:clamp(74px,9vw,132px); /* section dikey boşluğu (mobil↔masaüstü) */
   --gap:clamp(16px,2.4vw,26px);
-  --r:14px; --r-sm:10px; --r-lg:22px; --r-pill:999px;
-  --shadow-1:0 1px 2px rgba(20,18,12,.05);
-  --shadow-2:0 24px 60px -32px rgba(20,18,12,.34);
-  --font-body:'Manrope',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
-  --font-display:'Fraunces','Georgia','Times New Roman',serif;
+  --r:16px; --r-sm:12px; --r-lg:24px; --r-pill:999px;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --shadow-2:0 30px 70px -30px rgba(0,0,0,.72);
+  --font-body:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --font-display:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
 
   /* ---- Site Admin (admin.php) değişkenleri — KORUNDU ---- */
   --bg:#f5f7fc; --surface:#ffffff; --surface-2:#f0f4fb; --surface-3:#eaf0fa;
@@ -40,6 +41,9 @@
   --display:'Plus Jakarta Sans','Manrope',ui-sans-serif,system-ui,sans-serif;
 }
 
+/* Site Admin (admin.php) — açık tema token'larını koru (ink çakışmasını geri al) */
+body.admin-login-page,body.adm-body{--ink:#0f1b33}
+
 /* ============================================================
    TEMEL
    ============================================================ */
@@ -52,10 +56,10 @@ img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
 h1,h2,h3,h4{font-family:var(--font-display);color:var(--ink);margin:0 0 .5em;
-  font-weight:500;line-height:1.08;letter-spacing:-.01em;font-optical-sizing:auto}
+  font-weight:800;line-height:1.02;letter-spacing:-.03em}
 p{margin:0 0 1em}
-::selection{background:var(--ink);color:var(--paper)}
-:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
+::selection{background:var(--pop);color:#0b0d0a}
+:focus-visible{outline:2px solid var(--pop);outline-offset:3px;border-radius:4px}
 
 /* Layout yardımcıları */
 .wrap{width:100%;max-width:var(--shell);margin-inline:auto;padding-inline:clamp(20px,5vw,40px)}
@@ -65,11 +69,12 @@ p{margin:0 0 1em}
 
 /* Küçük uppercase etiket (eyebrow) */
 .eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-body);
-  font-weight:600;font-size:12px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--ink-2);margin:0 0 20px}
-.eyebrow::before{content:"";width:26px;height:1px;background:var(--hair-2)}
-.eyebrow.center::before,.section-heading.center .eyebrow::before{display:none}
-.eb-dot{width:7px;height:7px;border-radius:50%;background:var(--pop)}
+  font-weight:600;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-2);margin:0 0 22px}
+/* Hero / sayfa hero'sunda pill görünümü (referans dili) */
+.hero .eyebrow,.page-hero .eyebrow{border:1px solid var(--hair-2);border-radius:var(--r-pill);
+  padding:8px 15px;background:rgba(255,255,255,.02)}
+.eb-dot{width:7px;height:7px;border-radius:50%;background:var(--pop);box-shadow:0 0 10px var(--pop)}
 
 /* ============================================================
    BUTONLAR
@@ -84,16 +89,16 @@ p{margin:0 0 1em}
 .btn-sm,.btn.sm{padding:.7rem 1.2rem;font-size:.85rem}
 .btn-block,.btn.full{width:100%;white-space:normal;text-align:center}
 
-.btn-primary,.btn.primary{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
-.btn-primary:hover,.btn.primary:hover{background:#000;border-color:#000}
+.btn-primary,.btn.primary{background:var(--ink);color:#0b0d0a;border-color:var(--ink)}
+.btn-primary:hover,.btn.primary:hover{background:var(--pop);border-color:var(--pop);color:#0b0d0a}
 
 .btn-secondary,.btn.ghost{background:transparent;color:var(--ink);border-color:var(--hair-2)}
-.btn-secondary:hover,.btn.ghost:hover{border-color:var(--ink);background:var(--ink);color:var(--paper-2)}
+.btn-secondary:hover,.btn.ghost:hover{border-color:var(--pop);color:var(--pop);background:transparent}
 
-.btn-light,.btn.light{background:var(--paper-2);color:var(--ink);border-color:var(--paper-2)}
-.btn-light:hover,.btn.light:hover{background:#fff}
-.btn-line,.btn.outline-light{background:transparent;color:#fff;border-color:rgba(255,255,255,.42)}
-.btn-line:hover,.btn.outline-light:hover{background:#fff;color:var(--ink);border-color:#fff}
+.btn-light,.btn.light{background:var(--ink);color:#0b0d0a;border-color:var(--ink)}
+.btn-light:hover,.btn.light:hover{background:var(--pop);border-color:var(--pop);color:#0b0d0a}
+.btn-line,.btn.outline-light{background:transparent;color:var(--ink);border-color:var(--hair-2)}
+.btn-line:hover,.btn.outline-light:hover{background:var(--pop);color:#0b0d0a;border-color:var(--pop)}
 
 /* ============================================================
    HEADER + NAV
@@ -153,13 +158,16 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 /* ============================================================
    HERO
    ============================================================ */
-.hero{position:relative;padding:clamp(48px,7vw,92px) 0 clamp(56px,7vw,96px)}
-.hero-copy{max-width:640px}
-.hero-title{font-size:clamp(2.5rem,5.4vw,4.6rem);line-height:1.02;letter-spacing:-.025em;margin-bottom:26px;font-weight:400}
-.hero-title .hl{font-style:italic;color:var(--ink)}
-.hero-lead{font-size:clamp(1.05rem,1.5vw,1.2rem);color:var(--sub);max-width:520px;margin-bottom:32px;line-height:1.65}
-.hero-lead b{color:var(--ink-2);font-weight:600}
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:40px}
+.hero{position:relative;padding:clamp(52px,7vw,104px) 0 clamp(60px,7vw,104px);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(60% 70% at 15% 0%,rgba(200,241,58,.10),transparent 60%),
+             radial-gradient(50% 60% at 100% 30%,rgba(200,241,58,.05),transparent 60%)}
+.hero-copy{max-width:760px}
+.hero-title{font-size:clamp(2.9rem,7.4vw,6rem);line-height:.98;letter-spacing:-.04em;margin-bottom:28px;font-weight:800}
+.hero-title .hl{font-style:normal;color:var(--pop)}
+.hero-lead{font-size:clamp(1.05rem,1.5vw,1.22rem);color:var(--ink-2);max-width:560px;margin-bottom:34px;line-height:1.6}
+.hero-lead b{color:var(--ink);font-weight:600}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:44px}
 
 /* ============================================================
    SECTION + BAŞLIK
@@ -170,13 +178,18 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .section-heading{margin-bottom:clamp(38px,5vw,60px);display:flex;justify-content:space-between;
   align-items:flex-end;gap:24px;flex-wrap:wrap}
 .section-heading.center{flex-direction:column;align-items:center;text-align:center}
-.section-title{font-size:clamp(1.9rem,3.4vw,3rem);letter-spacing:-.02em;margin:0;max-width:16ch}
+/* referans dili: başlıktan sağa uzanan ince çizgi */
+.section-heading:not(.center)>div{order:0}
+.section-heading:not(.center)::after{content:"";order:1;flex:1;min-width:40px;height:1px;
+  background:var(--hair);align-self:center;margin:0 6px 14px}
+.section-heading:not(.center) .head-link{order:2}
+.section-title{font-size:clamp(2.1rem,4.4vw,3.6rem);letter-spacing:-.03em;margin:0;max-width:18ch;font-weight:800}
 .section-heading.center .section-title{max-width:20ch}
-.section-lead{color:var(--sub);max-width:52ch;margin:14px 0 0;font-size:1.02rem}
+.section-lead{color:var(--sub);max-width:52ch;margin:16px 0 0;font-size:1.02rem}
 .section-heading.center .section-lead{margin-inline:auto}
 .head-link{color:var(--ink);font-weight:600;font-size:.94rem;white-space:nowrap;
-  border-bottom:1px solid var(--hair-2);padding-bottom:3px;transition:.16s ease}
-.head-link:hover{border-color:var(--ink)}
+  border-bottom:1px solid var(--pop);padding-bottom:3px;transition:.16s ease}
+.head-link:hover{color:var(--pop)}
 
 /* Kart grid (responsive) */
 .card-grid{display:grid;gap:var(--gap)}
@@ -185,13 +198,13 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .card-grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
 
 /* Ortak kart index numarası (numaralı kartlar) */
-.card-index{display:block;font-family:var(--font-display);font-size:.95rem;color:var(--sub);
+.card-index{display:block;font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--pop);
   letter-spacing:.02em;margin-bottom:18px;font-feature-settings:"tnum"}
 
 /* Hizmet kartı */
 .service-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
   padding:30px 26px;transition:border-color .2s ease,transform .2s ease;display:flex;flex-direction:column}
-.service-card:hover{border-color:var(--ink);transform:translateY(-3px)}
+.service-card:hover{border-color:var(--pop);transform:translateY(-3px)}
 .service-card .card-title{font-size:1.22rem;margin-bottom:10px}
 .service-card p{color:var(--sub);font-size:.94rem;margin:0}
 
@@ -202,8 +215,8 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 
 /* Süreç kartı (numaralı) */
 .process-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
-.process-card{border-top:2px solid var(--ink);padding:22px 0 0}
-.process-card .card-index{font-size:2rem;color:var(--ink);opacity:.24;margin-bottom:12px;font-weight:500}
+.process-card{border-top:2px solid var(--hair-2);padding:22px 0 0}
+.process-card .card-index{font-size:2.4rem;color:var(--pop);opacity:.55;margin-bottom:12px;font-weight:800}
 .process-card .card-title{font-size:1.08rem;margin-bottom:8px}
 .process-card p{color:var(--sub);font-size:.9rem;margin:0}
 
@@ -218,6 +231,19 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .trust-card h3{font-family:var(--font-body);font-weight:600;font-size:1.02rem;margin:2px 0 0}
 .trust-card p{color:var(--sub);font-size:.9rem;margin:0;line-height:1.55}
 
+/* ============================================================
+   MARQUEE — kayan büyük yazı şeridi (referans dili)
+   ============================================================ */
+.marquee{border-block:1px solid var(--hair);padding:clamp(26px,3.6vw,42px) 0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.marquee-track{display:flex;align-items:center;gap:clamp(28px,4vw,58px);width:max-content;
+  white-space:nowrap;animation:marquee 34s linear infinite}
+.marquee-track span{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;
+  font-size:clamp(2rem,5.6vw,4.4rem);color:var(--ink);line-height:1}
+.marquee-track span.o{color:transparent;-webkit-text-stroke:1.4px var(--pop);text-stroke:1.4px var(--pop)}
+.marquee-track .dot{width:12px;height:12px;border-radius:50%;background:var(--pop);flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.marquee-track{animation:none}}
+
 /* Kart içi "Detay" linki */
 .card-link{margin-top:22px;color:var(--ink);font-weight:600;font-size:.88rem;
   display:inline-flex;align-items:center;gap:7px;width:max-content;transition:gap .16s ease}
@@ -230,24 +256,23 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .work-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
 .work-card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--hair);
   border-radius:var(--r);overflow:hidden;transition:border-color .2s ease,transform .2s ease}
-.work-card:hover{border-color:var(--ink);transform:translateY(-3px)}
+.work-card:hover{border-color:var(--pop);transform:translateY(-3px)}
 .work-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--card-2)}
-.work-media img{width:100%;height:100%;object-fit:cover;display:block}
+.work-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
 .work-card:hover .work-media img{transform:scale(1.03)}
-.work-media img{transition:transform .4s ease}
 .work-ph{position:absolute;inset:0;display:grid;place-items:center;
   background:
-    radial-gradient(120% 120% at 100% 0%,rgba(23,21,15,.06),transparent 60%),
-    repeating-linear-gradient(135deg,transparent 0 13px,rgba(23,21,15,.035) 13px 14px),
+    radial-gradient(120% 120% at 100% 0%,rgba(200,241,58,.10),transparent 60%),
+    repeating-linear-gradient(135deg,transparent 0 13px,rgba(255,255,255,.03) 13px 14px),
     var(--card-2)}
-.work-ph span{font-family:var(--font-display);font-size:2.6rem;color:var(--ink);opacity:.22;letter-spacing:.02em}
+.work-ph span{font-family:var(--font-display);font-size:2.6rem;color:var(--ink);opacity:.20;letter-spacing:.02em;font-weight:800}
 .work-body{padding:22px 24px;display:flex;flex-direction:column;gap:8px}
-.work-cat{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.work-cat{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--pop)}
 .work-body h3{font-size:1.16rem;margin:0}
 .work-body p{color:var(--sub);font-size:.9rem;margin:0}
 .work-visit{margin-top:6px;color:var(--ink);font-weight:600;font-size:.88rem;
-  border-bottom:1px solid var(--hair-2);padding-bottom:2px;width:max-content;transition:.16s ease}
-.work-visit:hover{border-color:var(--ink)}
+  border-bottom:1px solid var(--pop);padding-bottom:2px;width:max-content;transition:.16s ease}
+.work-visit:hover{color:var(--pop)}
 
 /* ============================================================
    PAKETLER
@@ -255,14 +280,11 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .pkg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap);align-items:stretch}
 .pkg-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
   padding:30px 26px;display:flex;flex-direction:column;transition:border-color .2s ease,transform .2s ease;position:relative}
-.pkg-card:hover{border-color:var(--ink-2);transform:translateY(-3px)}
-.pkg-card.featured{border-color:var(--ink);background:var(--ink);color:var(--paper-2)}
-.pkg-card.featured .pkg-name,.pkg-card.featured .pkg-price{color:var(--paper-2)}
-.pkg-card.featured .pkg-who{color:#c9c4b8}
-.pkg-card.featured .pkg-list li{color:#e7e3d9}
-.pkg-card.featured .pkg-list li::before{color:var(--paper-2)}
-.pkg-tag{position:absolute;top:-11px;left:26px;background:var(--pop);color:#fff;font-family:var(--font-body);
-  font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:var(--r-pill)}
+.pkg-card:hover{border-color:var(--hair-2);transform:translateY(-3px)}
+.pkg-card.featured{border-color:var(--pop);box-shadow:0 0 0 1px var(--pop),0 0 40px -8px rgba(200,241,58,.25)}
+.pkg-card.featured .pkg-price{border-color:var(--hair-2)}
+.pkg-tag{position:absolute;top:-11px;left:26px;background:var(--pop);color:#0b0d0a;font-family:var(--font-body);
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:var(--r-pill)}
 .pkg-name{font-size:1.28rem;margin-bottom:8px}
 .pkg-who{font-size:.86rem;color:var(--sub);min-height:40px;margin-bottom:16px;line-height:1.5}
 .pkg-price{font-family:var(--font-display);font-size:1.4rem;color:var(--ink);margin-bottom:22px;
@@ -277,7 +299,7 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
    ============================================================ */
 .ref-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
   padding:28px;transition:border-color .2s ease,transform .2s ease;display:flex;flex-direction:column}
-.ref-card:hover{border-color:var(--ink);transform:translateY(-3px)}
+.ref-card:hover{border-color:var(--pop);transform:translateY(-3px)}
 .ref-logo{width:52px;height:52px;border-radius:12px;background:var(--card-2);border:1px solid var(--hair);
   color:var(--ink);display:grid;place-items:center;font-family:var(--font-display);
   font-size:1.4rem;margin-bottom:18px;overflow:hidden}
@@ -286,9 +308,10 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .ref-card p{color:var(--sub);font-size:.92rem;margin-bottom:14px;flex:1}
 .ref-cat{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-2);border:1px solid var(--hair-2);padding:5px 11px;border-radius:var(--r-pill);width:max-content}
+.ref-cat{color:var(--pop)}
 .ref-visit{display:inline-block;margin-top:16px;color:var(--ink);font-weight:600;font-size:.9rem;
-  border-bottom:1px solid var(--hair-2);padding-bottom:2px;width:max-content;transition:.16s ease}
-.ref-visit:hover{border-color:var(--ink)}
+  border-bottom:1px solid var(--pop);padding-bottom:2px;width:max-content;transition:.16s ease}
+.ref-visit:hover{color:var(--pop)}
 
 /* ============================================================
    BLOG / REHBER
@@ -303,9 +326,10 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .post-card h3 a{transition:.15s ease}
 .post-card:hover h3 a{opacity:.62}
 .post-card p{color:var(--sub);font-size:.94rem;flex:1}
+.post-cat{color:var(--pop);border-color:var(--hair-2)}
 .post-more{color:var(--ink);font-weight:600;font-size:.9rem;margin-top:10px;
-  border-bottom:1px solid var(--hair-2);padding-bottom:2px;width:max-content;transition:.16s ease}
-.post-more:hover{border-color:var(--ink)}
+  border-bottom:1px solid var(--pop);padding-bottom:2px;width:max-content;transition:.16s ease}
+.post-more:hover{color:var(--pop)}
 
 /* ============================================================
    FAQ (button tabanlı, erişilebilir akordeon)
@@ -327,10 +351,13 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 /* ============================================================
    CTA BANT
    ============================================================ */
-.cta{background:var(--ink);color:var(--paper-2);padding:clamp(56px,7vw,88px) 0}
-.cta-inner{display:flex;justify-content:space-between;align-items:center;gap:36px;flex-wrap:wrap}
-.cta-title{color:var(--paper-2);font-size:clamp(1.8rem,3vw,2.7rem);letter-spacing:-.02em;margin-bottom:12px;max-width:18ch}
-.cta-text{color:#c9c4b8;margin:0;max-width:46ch}
+.cta{position:relative;padding:clamp(60px,7vw,96px) 0;background:var(--card-2);
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);overflow:hidden}
+.cta::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(60% 120% at 50% 0%,rgba(200,241,58,.10),transparent 60%)}
+.cta-inner{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:36px;flex-wrap:wrap}
+.cta-title{color:var(--ink);font-size:clamp(2rem,3.4vw,3.1rem);letter-spacing:-.03em;margin-bottom:12px;max-width:18ch;font-weight:800}
+.cta-text{color:var(--sub);margin:0;max-width:46ch}
 .cta-actions{display:flex;gap:12px;flex-wrap:wrap}
 
 /* ============================================================
@@ -388,9 +415,8 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .contact-info h3{font-size:1.12rem;margin-bottom:10px}
 .contact-info p{margin:0 0 14px;color:var(--ink-2)}
 .contact-info a{color:var(--ink);font-weight:600}
-.contact-info .btn{color:var(--paper-2)}
-.contact-info .btn.ghost,.contact-info .btn.btn-secondary{color:var(--ink)}
-.contact-info .btn.ghost:hover,.contact-info .btn.btn-secondary:hover{color:var(--paper-2)}
+.contact-info .btn.btn-primary{color:#0b0d0a}
+.contact-info .btn.btn-secondary:hover{color:var(--pop)}
 
 .quote-card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r-lg);
   padding:clamp(26px,3.5vw,40px);box-shadow:var(--shadow-1)}
@@ -405,11 +431,11 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .quote-form input,.quote-form select,.quote-form textarea{width:100%;border:1px solid var(--hair-2);
   background:var(--paper-2);border-radius:var(--r-sm);padding:13px 14px;font:inherit;font-size:.95rem;
   color:var(--ink);outline:none;transition:.16s ease}
-.quote-form input::placeholder,.quote-form textarea::placeholder{color:#8f887a}
-.quote-form input:focus,.quote-form select:focus,.quote-form textarea:focus{border-color:var(--ink);background:#fff}
+.quote-form input::placeholder,.quote-form textarea::placeholder{color:#6d7065}
+.quote-form input:focus,.quote-form select:focus,.quote-form textarea:focus{border-color:var(--pop);background:var(--card);box-shadow:0 0 0 3px var(--pop-soft)}
 .quote-form textarea{resize:vertical;min-height:110px}
 .kvkk-line{display:flex;flex-direction:row!important;align-items:flex-start;gap:11px;font-size:.9rem;color:var(--ink-2);line-height:1.55}
-.kvkk-line input{width:auto;margin-top:3px;accent-color:var(--ink)}
+.kvkk-line input{width:auto;margin-top:3px;accent-color:var(--pop)}
 .kvkk-line a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .quote-submit{margin-top:4px}
 .form-status{grid-column:1/-1;margin:0;font-size:.94rem;font-weight:600;min-height:1px}
@@ -419,35 +445,35 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 /* ============================================================
    FOOTER
    ============================================================ */
-.site-footer{background:var(--ink);color:#b9b4a8}
+.site-footer{background:#0e100c;border-top:1px solid var(--hair);color:var(--sub)}
 .footer-top{max-width:var(--shell);margin-inline:auto;padding:clamp(56px,7vw,84px) clamp(20px,5vw,40px) 44px;
   display:grid;grid-template-columns:1.7fr 1fr 1fr 1.15fr;gap:clamp(28px,4vw,48px)}
-.footer-brand .brand-name{color:var(--paper-2)}
-.footer-brand .brand-name em{color:#b9b4a8}
+.footer-brand .brand-name{color:var(--ink)}
+.footer-brand .brand-name em{color:var(--sub)}
 .footer-brand img{filter:none}
-.footer-brand p{color:#948f83;font-size:.94rem;margin:20px 0;max-width:34ch;line-height:1.7}
+.footer-brand p{color:var(--sub);font-size:.94rem;margin:20px 0;max-width:34ch;line-height:1.7}
 .footer-social{display:flex;gap:10px;flex-wrap:wrap}
-.footer-social a{font-size:.82rem;font-weight:500;color:#cfcabe;border:1px solid rgba(255,255,255,.16);
+.footer-social a{font-size:.82rem;font-weight:500;color:var(--ink-2);border:1px solid var(--hair-2);
   padding:8px 15px;border-radius:var(--r-pill);transition:.16s ease}
-.footer-social a:hover{background:var(--paper-2);border-color:var(--paper-2);color:var(--ink)}
-.footer-col h4{font-family:var(--font-body);color:var(--paper-2);font-size:11px;text-transform:uppercase;
+.footer-social a:hover{background:var(--pop);border-color:var(--pop);color:#0b0d0a}
+.footer-col h4{font-family:var(--font-body);color:var(--ink);font-size:11px;text-transform:uppercase;
   letter-spacing:.16em;margin-bottom:20px;font-weight:600}
-.footer-col a,.footer-col small{display:block;color:#948f83;font-size:.92rem;margin-bottom:13px;transition:.15s ease}
-.footer-col a:hover{color:var(--paper-2)}
-.footer-col small{color:#726d63;font-size:.82rem;margin-top:6px;line-height:1.6}
+.footer-col a,.footer-col small{display:block;color:var(--sub);font-size:.92rem;margin-bottom:13px;transition:.15s ease}
+.footer-col a:hover{color:var(--pop)}
+.footer-col small{color:var(--sub);font-size:.82rem;margin-top:6px;line-height:1.6}
 .footer-bottom{max-width:var(--shell);margin-inline:auto;padding:22px clamp(20px,5vw,40px);
   display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
-  font-size:.82rem;color:#948f83;border-top:1px solid rgba(255,255,255,.1)}
+  font-size:.82rem;color:var(--sub);border-top:1px solid var(--hair)}
 .footer-legal{display:flex;gap:20px}
-.footer-legal a:hover{color:var(--paper-2)}
+.footer-legal a:hover{color:var(--pop)}
 
 /* WhatsApp float */
 .whatsapp-float{position:fixed;right:22px;bottom:22px;z-index:70;width:54px;height:54px;
-  border-radius:50%;background:var(--ink);display:grid;place-items:center;
-  box-shadow:var(--shadow-2);transition:transform .18s ease}
+  border-radius:50%;background:var(--pop);display:grid;place-items:center;
+  box-shadow:0 10px 30px -6px rgba(200,241,58,.4);transition:transform .18s ease}
 .whatsapp-float:hover{transform:scale(1.06)}
 .wa-icon{width:28px;height:28px}
-.wa-bubble{fill:var(--paper-2)}.wa-phone{fill:var(--ink)}
+.wa-bubble{fill:#0b0d0a}.wa-phone{fill:var(--pop)}
 
 /* ============================================================
    ÖN YÜZ — RESPONSIVE
@@ -493,8 +519,8 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   .brand-name{font-size:1.14rem}
   .whatsapp-float{right:16px;bottom:16px}
 }
-@media (max-width:360px){
-  /* Çok dar ekran: header CTA butonu gizlenir (CTA mobil menüde + hero'da + WhatsApp float'ta mevcut) */
+@media (max-width:440px){
+  /* Dar ekran: header CTA butonu gizlenir (CTA mobil menüde + hero'da + WhatsApp float'ta mevcut) */
   .header-actions .btn-primary{display:none}
   .header-inner{gap:14px}
 }
