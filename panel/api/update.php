@@ -23,6 +23,7 @@ $editable = [
     'competitor_density','priority','close_probability','requested_service',
     'has_domain','has_hosting','has_logo','has_photos','has_content','need_multilang','need_appointment','need_online_payment','need_blog','need_gallery',
     'estimated_amount','net_amount','discount_amount','deposit_amount','offer_sent','offer_sent_at',
+    'whatsapp_sent_at','last_message_type','last_message_text',
     'start_date','estimated_delivery_date','actual_delivery_date','revision_limit','revision_used',
     'domain_owner','domain_provider','domain_name','domain_expiry_date','hosting_provider','hosting_expiry_date','renewal_fee','payment_receipt_file',
 ];

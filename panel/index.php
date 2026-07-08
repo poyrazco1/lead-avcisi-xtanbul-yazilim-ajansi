@@ -12,7 +12,7 @@ $packagePrices = setting_get('package_prices', package_default_prices());
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lead Avcısı Panel v5</title>
-  <link rel="stylesheet" href="assets/style.css?v=52">
+  <link rel="stylesheet" href="assets/style.css?v=53">
 </head>
 <body>
   <div class="app-shell">
@@ -429,6 +429,6 @@ $packagePrices = setting_get('package_prices', package_default_prices());
     packages:<?=json_encode(array_map(fn($p)=>$p['label'], package_catalog($packagePrices)), JSON_UNESCAPED_UNICODE)?>
   };</script>
   <script src="assets/data.js?v=46"></script>
-  <script src="assets/app.js?v=52"></script>
+  <script src="assets/app.js?v=53"></script>
 </body>
 </html>

@@ -228,6 +228,9 @@ function bootstrap_app(): void {
     ensure_column($m, 'leads', 'deposit_amount', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
     ensure_column($m, 'leads', 'offer_sent', 'TINYINT(1) NOT NULL DEFAULT 0');
     ensure_column($m, 'leads', 'offer_sent_at', 'DATETIME NULL');
+    ensure_column($m, 'leads', 'whatsapp_sent_at', 'DATETIME NULL');
+    ensure_column($m, 'leads', 'last_message_type', 'VARCHAR(50) NULL');
+    ensure_column($m, 'leads', 'last_message_text', 'TEXT NULL');
 
     $m->query("CREATE TABLE IF NOT EXISTS lead_activities (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -747,7 +750,8 @@ function lead_editable_columns(): array {
         'name','sector','sub_sector','city','district','address','phone','website','maps_url','rating','review_count','lead_score','score_reason',
         'contact_name','contact_position','whatsapp_phone','email','neighborhood','instagram','facebook','website_quality','competitor_density','priority','close_probability','requested_service',
         'has_domain','has_hosting','has_logo','has_photos','has_content','need_multilang','need_appointment','need_online_payment','need_blog','need_gallery',
-        'estimated_amount','net_amount','discount_amount','deposit_amount','offer_sent','offer_sent_at'];
+        'estimated_amount','net_amount','discount_amount','deposit_amount','offer_sent','offer_sent_at',
+        'whatsapp_sent_at','last_message_type','last_message_text'];
 }
 function update_lead_fields(int $id, array $fields, ?string $actor = null): bool {
     $allowed = lead_editable_columns();
@@ -776,50 +780,83 @@ function update_lead_fields(int $id, array $fields, ?string $actor = null): bool
     return $ok;
 }
 
-function bump_message_count(int $id): void {
+function bump_message_count(int $id, string $type = '', string $text = ''): void {
+    $now = date('Y-m-d H:i:s');
     $m = db();
-    if ($m) { $m->query('UPDATE leads SET message_count=message_count+1, last_contact_at=NOW() WHERE id='.max(1,$id)); return; }
+    if ($m) {
+        $stmt = $m->prepare('UPDATE leads SET message_count=message_count+1, last_contact_at=NOW(), whatsapp_sent_at=NOW(), last_message_type=?, last_message_text=? WHERE id=?');
+        if ($stmt) { $t=$type; $x=$text; $iid=max(1,$id); $stmt->bind_param('ssi',$t,$x,$iid); $stmt->execute(); $stmt->close(); }
+        return;
+    }
     ensure_data_files(); $path=__DIR__.'/../data/leads.json'; $list=json_decode((string)@file_get_contents($path), true) ?: [];
-    foreach ($list as &$r) if ((int)($r['id'] ?? 0)===$id) { $r['message_count']=(int)($r['message_count']??0)+1; $r['last_contact_at']=date('Y-m-d H:i:s'); }
+    foreach ($list as &$r) if ((int)($r['id'] ?? 0)===$id) { $r['message_count']=(int)($r['message_count']??0)+1; $r['last_contact_at']=$now; $r['whatsapp_sent_at']=$now; $r['last_message_type']=$type; $r['last_message_text']=$text; }
     @file_put_contents($path, json_encode($list, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 }
 /**
- * WhatsApp mesajı gönderildi olarak işaretle: message_count++, last_contact_at, activity log,
- * ve gerektiğinde durumu ileri taşı (asla geri düşürmez).
+ * WhatsApp mesaj türlerini kanonik hale getir (yeni + eski adlar desteklenir).
  */
-function mark_whatsapp_sent(int $id, string $type = 'first'): array {
+function whatsapp_type_canonical(string $type): string {
+    $t = strtolower(trim($type));
+    $map = [
+        'first_contact'=>'first','first'=>'first','ilk'=>'first','manual'=>'manual',
+        'follow_up'=>'followup','followup'=>'followup','takip'=>'followup',
+        'offer'=>'offer','detail'=>'offer','teklif'=>'offer',
+        'payment'=>'payment','odeme'=>'payment',
+        'contract'=>'contract','sozlesme'=>'contract',
+        'delivery'=>'delivery','teslim'=>'delivery',
+        'renewal'=>'renewal','yenileme'=>'renewal',
+        'tracking'=>'tracking',
+    ];
+    return $map[$t] ?? 'first';
+}
+/**
+ * WhatsApp mesajı gönderildi olarak işaretle:
+ *  - message_count++, last_contact_at, whatsapp_sent_at, last_message_type/text
+ *  - net durum kurallarıyla durumu ileri taşır (asla geri düşürmez)
+ *  - lead_activities'e kayıt düşürür
+ */
+function mark_whatsapp_sent(int $id, string $type = 'first_contact'): array {
     $lead = get_lead($id);
     if (!$lead) return ['ok'=>false,'error'=>'Lead bulunamadı.'];
-    $map = [
-        'first'    => ['status'=>'WhatsApp gönderildi', 'title'=>'İlk WhatsApp mesajı gönderildi'],
-        'manual'   => ['status'=>'WhatsApp gönderildi', 'title'=>'WhatsApp mesajı gönderildi olarak işaretlendi'],
-        'detail'   => ['status'=>'Teklif gönderildi',   'title'=>'Detaylı teklif mesajı gönderildi'],
-        'payment'  => ['status'=>'Ödeme linki gönderildi','title'=>'Ödeme / kapora mesajı gönderildi'],
-        'followup' => ['status'=>'',                     'title'=>'Takip mesajı gönderildi'],
-        'tracking' => ['status'=>'',                     'title'=>'Takip linki gönderildi'],
-        'contract' => ['status'=>'Sözleşme gönderildi',  'title'=>'Sözleşme mesajı gönderildi'],
-        'delivery' => ['status'=>'',                     'title'=>'Teslim / yayın mesajı gönderildi'],
-        'renewal'  => ['status'=>'',                     'title'=>'Yenileme hatırlatma mesajı gönderildi'],
+    $canon = whatsapp_type_canonical($type);
+    // Kanonik tür → mesaj üretici tipi (message_for_lead)
+    $msgTypeMap = ['first'=>'first','manual'=>'first','followup'=>'followup','offer'=>'detail','payment'=>'payment','contract'=>'contract','delivery'=>'delivery','renewal'=>'renewal','tracking'=>'tracking'];
+    $msgText = message_for_lead($lead, $msgTypeMap[$canon] ?? 'first');
+    $titles = [
+        'first'=>'WhatsApp mesajı gönderildi','manual'=>'WhatsApp mesajı gönderildi olarak işaretlendi',
+        'followup'=>'Takip mesajı gönderildi','offer'=>'Teklif mesajı gönderildi','payment'=>'Ödeme mesajı gönderildi',
+        'contract'=>'Sözleşme mesajı gönderildi','delivery'=>'Teslim / yayın mesajı gönderildi','renewal'=>'Yenileme mesajı gönderildi','tracking'=>'Takip linki gönderildi',
     ];
-    $cfg = $map[$type] ?? $map['first'];
-    bump_message_count($id);
     $current = (string)($lead['status'] ?? '');
-    $target = $cfg['status'];
-    $newStatus = $current;
-    if ($target !== '') {
-        $order = lead_pipeline_statuses();
-        $ci = array_search($current, $order, true);
-        $ti = array_search($target, $order, true);
-        // İleri seviyedeki lead'i geri düşürme
-        if ($ti !== false && ($ci === false || $ti > $ci)) {
-            update_lead_fields($id, ['status'=>$target]); // status_change activity'yi kendisi loglar
-            $newStatus = $target;
-        }
+    $order = lead_pipeline_statuses();
+    $advanceTo = function(string $target) use ($current, $order) : ?string {
+        if ($target === '') return null;
+        $ci = array_search($current, $order, true); $ti = array_search($target, $order, true);
+        return ($ti !== false && ($ci === false || $ti > $ci)) ? $target : null;
+    };
+    // Durum güncelleme kuralları (net)
+    $newStatus = $current; $target = null;
+    switch ($canon) {
+        case 'first':
+        case 'manual':
+            // Yalnızca Yeni Lead / Uygunluk kontrolü ise ilerlet
+            if (in_array($current, ['Aranmadı','Uygunluk kontrolü'], true)) $target = 'WhatsApp gönderildi';
+            break;
+        case 'offer':   $target = $advanceTo('Teklif gönderildi'); break;
+        case 'payment': $target = $advanceTo('Ödeme bekleniyor'); break;
+        case 'contract':$target = $advanceTo('Sözleşme gönderildi'); break;
+        case 'delivery':$target = $advanceTo('Yayına hazır'); break;
+        case 'followup':
+        case 'renewal':
+        case 'tracking': $target = null; break;
     }
-    // Ödeme/teklif için ek işaretler
-    if ($type === 'detail') update_lead_fields($id, ['offer_sent'=>'1','offer_sent_at'=>date('Y-m-d H:i:s')]);
-    log_activity($id, 'whatsapp', $cfg['title'], (string)($lead['name'] ?? ''), $current, $newStatus);
-    return ['ok'=>true,'status'=>$newStatus,'message_count'=>(int)($lead['message_count'] ?? 0)+1];
+    // Alanları güncelle (message_count, last_contact_at, whatsapp_sent_at, last_message_type/text)
+    bump_message_count($id, $canon, $msgText);
+    if ($target && $target !== $current) { update_lead_fields($id, ['status'=>$target]); $newStatus = $target; }
+    if ($canon === 'offer') update_lead_fields($id, ['offer_sent'=>'1','offer_sent_at'=>date('Y-m-d H:i:s')]);
+    $shortMsg = mb_substr(trim(preg_replace('/\s+/', ' ', $msgText)), 0, 120);
+    log_activity($id, 'whatsapp', ($titles[$canon] ?? 'WhatsApp mesajı gönderildi'), '['.$canon.'] '.$shortMsg, $current, $newStatus);
+    return ['ok'=>true,'status'=>$newStatus,'message_count'=>(int)($lead['message_count'] ?? 0)+1,'lead'=>get_lead($id),'message'=>$msgText];
 }
 
 /* ============ Aktivite / iletişim geçmişi ============ */

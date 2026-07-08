@@ -289,7 +289,7 @@ function prioClass(p){return 'prio-'+String(p||'Ilık').toLowerCase().replace(/�
 function digitalCell(r){ const has=(r.website||'').trim()!==''; const top = has ? escapeHtml(r.website_quality||'Site var') : 'Site yok'; const sub = r.rating ? `★${escapeHtml(r.rating)}${r.review_count?` · ${escapeHtml(r.review_count)}`:''}` : ''; return `<span class="cell-sub" style="color:${has?'var(--ink-soft)':'var(--ok)'};font-weight:600">${top}</span>${sub?`<span class="cell-sub">${sub}</span>`:''}`; }
 function actionGroup(r){
   return `<div class="action-group">
-    <button class="icon-btn wa" title="WhatsApp gönder" onclick="sendWhatsApp(${Number(r.id)},'first')">💬</button>
+    <button class="icon-btn wa" title="İlk WhatsApp mesajı gönder" onclick="sendLeadWhatsapp(${Number(r.id)},'first_contact')">💬</button>
     <button class="icon-btn detail" title="Detay" onclick="openDetail(${Number(r.id)})">👁</button>
     <button class="icon-btn more" title="Diğer işlemler" onclick="openFloatMenu(this,${Number(r.id)},event)">⋯</button>
   </div>`;
@@ -301,12 +301,15 @@ function openFloatMenu(btn, id, ev){
   if(floatMenuEl){ closeFloatMenu(); return; }
   const r = lastLeads.find(x=>Number(x.id)===Number(id)) || {};
   const items = [
-    ['Ara (script)', `openCall(${id})`],
-    ['Teklif mesajı', `sendWhatsApp(${id},'detail')`],
-    ['Ödeme mesajı', `sendWhatsApp(${id},'payment')`],
-    ['Takip mesajı', `sendWhatsApp(${id},'followup')`],
-    ['Takip linki', `sendWhatsApp(${id},'tracking')`],
-    ['Gönderildi işaretle', `markSentManual(${id})`],
+    ['💬 İlk mesaj', `sendLeadWhatsapp(${id},'first_contact')`],
+    ['💬 Takip mesajı', `sendLeadWhatsapp(${id},'follow_up')`],
+    ['💬 Teklif mesajı', `sendLeadWhatsapp(${id},'offer')`],
+    ['💬 Ödeme mesajı', `sendLeadWhatsapp(${id},'payment')`],
+    ['💬 Sözleşme mesajı', `sendLeadWhatsapp(${id},'contract')`],
+    ['💬 Teslim mesajı', `sendLeadWhatsapp(${id},'delivery')`],
+    ['💬 Yenileme mesajı', `sendLeadWhatsapp(${id},'renewal')`],
+    ['📞 Ara (script)', `openCall(${id})`],
+    ['✓ Gönderildi işaretle', `markSentManual(${id})`],
   ];
   const links = [
     ['Sözleşme', `contract.php?lead_id=${id}`],
@@ -338,10 +341,12 @@ function renderLeads(rows){
     const lastContact = (r.last_contact_at||'').slice(0,10);
     const follow = (r.next_followup_at||'').slice(0,10);
     const email = r.email ? `<span class="cell-sub" title="${escapeHtml(r.email)}">✉ ${escapeHtml(r.email)}</span>` : '';
+    const mc = Number(r.message_count||0);
+    const waBadge = mc>0 ? `<span class="wa-badge" title="Son WhatsApp: ${escapeHtml((r.whatsapp_sent_at||r.last_contact_at||'').slice(0,16).replace('T',' '))}">✓ WA${mc>1?' ·'+mc:''}</span>` : '';
     tbody.insertAdjacentHTML('beforeend', `<tr>
       <td><span class="score-badge ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></td>
       <td class="cell-firma"><span class="biz-name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</span>${contactName}<span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span></td>
-      <td class="cell-contact"><a href="tel:${escapeHtml(r.phone)}" title="${escapeHtml(r.phone||'')}">${escapeHtml(r.phone||'—')}</a><span class="sub-ico">${r.phone?'<span class="wa-mini">WA</span>':''}${email}</span></td>
+      <td class="cell-contact"><a href="tel:${escapeHtml(r.phone)}" title="${escapeHtml(r.phone||'')}">${escapeHtml(r.phone||'—')}</a><span class="sub-ico">${waBadge||email}</span></td>
       <td><span class="cell-sub" title="${escapeHtml(sectorText)}" style="color:var(--ink-soft);font-weight:600">${escapeHtml(sectorText||'—')}</span><span class="cell-sub">${escapeHtml(regionText)}</span></td>
       <td>${digitalCell(r)}</td>
       <td>${statusSelect(r.id, r.status)}</td>
@@ -350,7 +355,7 @@ function renderLeads(rows){
     </tr>`);
     cards.insertAdjacentHTML('beforeend', `<article class="lead-card">
       <div class="card-top"><h3>${escapeHtml(r.name)}</h3><div class="lc-badges"><span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span><span class="score-badge ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></div></div>
-      <p class="lc-contact"><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'—')}</a>${r.email?' · '+escapeHtml(r.email):''}</p>
+      <p class="lc-contact"><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'—')}</a>${waBadge?' '+waBadge:''}${r.email?' · '+escapeHtml(r.email):''}</p>
       <p>${escapeHtml(sectorText)} · ${escapeHtml(regionText)}</p>
       <p class="muted">${digitalStatus(r)}${lastContact?' · son temas '+lastContact:''}${follow?' · takip '+follow:''}</p>
       <div class="card-controls">${statusSelect(r.id, r.status)}${actionGroup(r)}</div>
@@ -364,31 +369,63 @@ function statusSelect(id, val){
 }
 async function updateLead(id, fields, silent){ try{await api('api/update.php',{id,...fields}); if(!silent) toast('Güncellendi.'); await loadLeads(false); await refreshStats();} catch(e){toast(e.message,'bad');} }
 
-/* ============ WhatsApp gönderimi (sağlam) ============ */
-function waToast(type){
-  const m={first:'WhatsApp açıldı ve lead “WhatsApp gönderildi” olarak işaretlendi.',detail:'Teklif mesajı açıldı ve işaretlendi.',payment:'Ödeme mesajı açıldı, durum “Ödeme linki gönderildi” yapıldı.',followup:'Takip mesajı açıldı ve kaydedildi.',tracking:'Takip linki açıldı ve kaydedildi.',contract:'Sözleşme mesajı açıldı.'};
-  return m[type]||'WhatsApp mesajı gönderildi olarak işaretlendi.';
+/* ============ WhatsApp gönderimi (tek fonksiyon, sağlam) ============ */
+// Yeni mesaj türü -> mesaj üretici (lead-message.php) tipi
+const WA_MSG_TYPE = {first_contact:'first',follow_up:'followup',offer:'detail',payment:'payment',contract:'contract',delivery:'delivery',renewal:'renewal',tracking:'tracking'};
+async function markWhatsappSent(id, messageType){
+  return api('api/lead-whatsapp-mark.php', {id, type: messageType});
 }
-async function sendWhatsApp(id, type='first'){
-  // Popup engeline takılmamak için pencereyi hemen (kullanıcı hareketiyle) aç
+async function refreshAfterWa(id){ await loadLeads(false); await refreshStats(); if(detailLeadId===Number(id)) await loadActivities(id); }
+async function sendLeadWhatsapp(leadId, messageType='first_contact'){
+  // 1) Popup engeline takılmamak için pencereyi hemen (kullanıcı hareketiyle) aç
   const win = window.open('', '_blank');
+  let msg='', url='';
   try{
-    const d = await api(`api/message.php?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`);
-    const url = d.whatsapp_url;
-    if(win && !win.closed){
-      win.location = url;
-      toast(waToast(type), 'ok');
-    } else {
-      try{ await navigator.clipboard.writeText(d.message||''); }catch(e){}
-      toast('WhatsApp açılamadı, mesaj panoya kopyalandı. WhatsApp’ı açıp yapıştırabilirsiniz.', 'warn');
+    const d = await api(`api/lead-message.php?id=${encodeURIComponent(leadId)}&type=${encodeURIComponent(WA_MSG_TYPE[messageType]||'first')}`);
+    msg = d.message || ''; url = d.whatsapp_url || waUrl(d.phone, msg);
+  }catch(e){ if(win) win.close(); return toast('Mesaj hazırlanamadı: '+e.message,'bad'); }
+
+  if(win && !win.closed){
+    // 2) WhatsApp açıldı -> aç + CRM'i güncelle
+    win.location = url;
+    try{
+      await markWhatsappSent(leadId, messageType);
+      toast('WhatsApp açıldı ve lead gönderildi olarak işaretlendi.','ok');
+    }catch(e){
+      toast('WhatsApp açıldı fakat CRM güncellenemedi. “Gönderildi işaretle” ile tekrar deneyin.','warn');
     }
-    // Sunucuda gönderildi olarak işaretle (durum + activity + message_count)
-    await api('api/whatsapp.php', {id, type});
-    await loadLeads(false); await refreshStats();
-    if(detailLeadId===Number(id)) await loadActivities(id);
-  }catch(e){ if(win && !win.closed) win.close(); toast(e.message,'bad'); }
+    await refreshAfterWa(leadId);
+  } else {
+    // 3) Popup engellendi -> panoya kopyala + manuel aç + gönderildi işaretle
+    try{ await navigator.clipboard.writeText(msg); }catch(e){}
+    showWaFallback(leadId, messageType, url);
+    toast('WhatsApp açılamadı, mesaj panoya kopyalandı.','warn');
+  }
 }
-async function markSentManual(id, type='manual'){ try{ await api('api/whatsapp.php',{id,type}); toast('Lead gönderildi olarak işaretlendi.','ok'); await loadLeads(false); await refreshStats(); if(detailLeadId===Number(id)) await loadActivities(id);}catch(e){toast(e.message,'bad');} }
+// Eski çağrılar için köprü (first/detail/payment/followup/tracking/manual)
+function sendWhatsApp(id, type='first'){
+  const map={first:'first_contact',detail:'offer',payment:'payment',followup:'follow_up',tracking:'tracking',contract:'contract',delivery:'delivery',renewal:'renewal',manual:'first_contact'};
+  return sendLeadWhatsapp(id, map[type]||'first_contact');
+}
+async function markSentManual(id, type='first_contact'){
+  try{ await markWhatsappSent(id, type); toast('Lead gönderildi olarak işaretlendi.','ok'); hideWaFallback(); await refreshAfterWa(id); }
+  catch(e){ toast(e.message,'bad'); }
+}
+// Popup engeli fallback çubuğu
+function hideWaFallback(){ $('#waFallback')?.remove(); }
+function showWaFallback(leadId, messageType, url){
+  hideWaFallback();
+  const lead = lastLeads.find(x=>Number(x.id)===Number(leadId)) || {};
+  const el = document.createElement('div');
+  el.id='waFallback'; el.className='wa-fallback';
+  el.innerHTML = `<div class="waf-body"><b>WhatsApp açılamadı</b><span>Mesaj panoya kopyalandı — ${escapeHtml(lead.name||'lead')}</span></div>
+    <div class="waf-actions">
+      <a class="btn wa sm" href="${escapeHtml(url)}" target="_blank" rel="noopener" onclick="markSentManual(${Number(leadId)},'${messageType}')">WhatsApp’ı Aç</a>
+      <button class="btn secondary sm" type="button" onclick="markSentManual(${Number(leadId)},'${messageType}')">Gönderildi İşaretle</button>
+      <button class="btn ghost sm" type="button" onclick="hideWaFallback()">Kapat</button>
+    </div>`;
+  document.body.appendChild(el);
+}
 
 /* ============ Arama modalı ============ */
 let activeCallLeadId = null;
@@ -490,7 +527,10 @@ function buildDetailPane(key, r){
     ${fld('Sonraki takip tarihi','next_followup_at',(r.next_followup_at||'').slice(0,10),'date')}
     ${fld('Son iletişim','last_contact_at',(r.last_contact_at||'').slice(0,16).replace('T',' '),'readonly')}
   </div>`;
-  if(key==='gecmis') return `<div class="activity-add"><input id="activityNote" placeholder="Not / görüşme ekle..."><button class="btn primary" onclick="addActivity()">Ekle</button></div><div id="activityTimeline" class="activity-timeline"><div class="loading-row">Yükleniyor...</div></div>`;
+  if(key==='gecmis'){ const wa=(r.whatsapp_sent_at||'').slice(0,16).replace('T',' '); const mc=Number(r.message_count||0);
+    return `<div class="gecmis-meta">${mc>0?`<span class="wa-badge">✓ ${mc} WhatsApp</span> <span class="cell-sub">Son gönderim: ${escapeHtml(wa||'—')}</span>`:'<span class="cell-sub">Henüz WhatsApp gönderilmedi.</span>'}
+      <div class="gecmis-send"><button class="btn wa sm" onclick="sendLeadWhatsapp(${Number(r.id)},'first_contact')">💬 İlk mesaj</button><button class="btn secondary sm" onclick="sendLeadWhatsapp(${Number(r.id)},'follow_up')">Takip</button><button class="btn secondary sm" onclick="sendLeadWhatsapp(${Number(r.id)},'offer')">Teklif</button></div></div>
+      <div class="activity-add"><input id="activityNote" placeholder="Not / görüşme ekle..."><button class="btn primary" onclick="addActivity()">Ekle</button></div><div id="activityTimeline" class="activity-timeline"><div class="loading-row">Yükleniyor...</div></div>`; }
   if(key==='sozlesme') return `<div class="detail-grid">
     ${fld('Sözleşme durumu','contract_status',r.contract_status)}
     ${fld('Sipariş durumu','order_status',r.order_status,'select',OPT.orderStatuses)}
@@ -615,7 +655,7 @@ function initPanelNavigation(){
 function openSidebar(){ document.body.classList.add('sidebar-open'); }
 function closeSidebar(){ document.body.classList.remove('sidebar-open'); }
 
-window.updateLead=updateLead; window.openDetail=openDetail; window.closeDetail=closeDetail; window.switchTab=switchTab; window.sendWhatsApp=sendWhatsApp; window.markSentManual=markSentManual; window.openCall=openCall; window.closeCallModal=closeCallModal; window.openFloatMenu=openFloatMenu; window.closeFloatMenu=closeFloatMenu; window.addActivity=addActivity;
+window.updateLead=updateLead; window.openDetail=openDetail; window.closeDetail=closeDetail; window.switchTab=switchTab; window.sendWhatsApp=sendWhatsApp; window.sendLeadWhatsapp=sendLeadWhatsapp; window.markSentManual=markSentManual; window.hideWaFallback=hideWaFallback; window.openCall=openCall; window.closeCallModal=closeCallModal; window.openFloatMenu=openFloatMenu; window.closeFloatMenu=closeFloatMenu; window.addActivity=addActivity;
 
 document.addEventListener('DOMContentLoaded',()=>{
   initPanelNavigation();

@@ -608,3 +608,14 @@ select[multiple].has-selection{border-color:var(--brand)}
   .sales-grid .wide-2{grid-column:span 1}
   .result-counters{grid-template-columns:repeat(2,1fr)}
 }
+
+/* WhatsApp gönderim rozeti + popup fallback */
+.wa-badge{display:inline-flex;align-items:center;gap:3px;background:#dcfce7;color:#15803d;border-radius:999px;padding:2px 7px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.wa-fallback{position:fixed;right:20px;bottom:20px;z-index:130;max-width:360px;background:var(--surface);border:1px solid var(--line-2);border-left:4px solid var(--warn);border-radius:13px;box-shadow:var(--shadow-lg);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.wa-fallback .waf-body b{display:block;font-size:14px}
+.wa-fallback .waf-body span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.wa-fallback .waf-actions{display:flex;gap:6px;flex-wrap:wrap}
+.wa-fallback .waf-actions .btn{flex:1;min-width:96px}
+@media (max-width:680px){ .wa-fallback{left:12px;right:12px;max-width:none} }
+.gecmis-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px}
+.gecmis-send{display:flex;gap:6px;flex-wrap:wrap}

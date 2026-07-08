@@ -215,6 +215,12 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS discount_amount DECIMAL(12,2) NOT NUL
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS deposit_amount DECIMAL(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS offer_sent TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS offer_sent_at DATETIME NULL;
+-- WhatsApp gönderim takibi (message_count/last_contact_at eski sürümlerde de olabilir)
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS whatsapp_sent_at DATETIME NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_message_type VARCHAR(50) NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_message_text TEXT NULL;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS message_count INT NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_contact_at DATETIME NULL;
 
 -- Lead iletişim geçmişi / aktivite kaydı
 CREATE TABLE IF NOT EXISTS lead_activities (
