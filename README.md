@@ -16,6 +16,10 @@ v5 ile ön yüz ve panel **açık, kurumsal ajans temasına** taşındı; lead p
 - **Yönetilebilir mesaj şablonları** (Ayarlar): ilk mesaj, detaylı teklif, ödeme/kapora, takip, sözleşme, teslim, yenileme, takip linki — değişkenlerle (`{firma_adi}`, `{yetkili}`, `{paket}`, `{teklif_tutari}`, `{kapora}`, `{kalan_odeme}`, `{takip_linki}` vb.).
 - **Gelişmiş lead listesi:** arama + durum + şehir + sektör + öncelik + temsilci + web sitesi var/yok + WhatsApp gönderildi/gönderilmedi + teklif + takip (bugün/gecikmiş) filtreleri; aksiyonlar "birincil / ikincil / diğer" olarak gruplu.
 
+## Kurulum (tek SQL)
+- Tüm veritabanı şeması **tek dosyada**: `panel/database/install.sql` (tüm tablolar ve kolonlar CREATE içinde; ayrı ALTER gerekmez). Bu dosyayı içe aktarmak temiz kurulum için yeterlidir; panel ilk açılışta eksik kolon/tabloları `ensure_column` ile otomatik tamamlar.
+- Site içerik yönetimi (**site admin**): `/admin.php` — açık temalı modern panel (Panel/Blog-Haber/Referans/Site Ayarları), sidebar + mini dashboard, gruplu ayar formları, responsive.
+
 ## Korunanlar
 - Sözleşme önlü/arkalı A4 formatı, CSV import/export, Google Places lead toplama, kara liste, ödeme/sözleşme akışı, admin paneli.
 

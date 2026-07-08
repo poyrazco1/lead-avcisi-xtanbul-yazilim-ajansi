@@ -15,4 +15,4 @@ Giriş:
 Önemli:
 - /panel/app ve /panel/data klasörleri .htaccess ile korunur.
 - Google API key panelde ekranda açık görünmez.
-- SQL dosyası /panel/database/schema.sql içindedir.
+- SQL dosyası /panel/database/install.sql içindedir.
