@@ -242,6 +242,45 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .process-card p{color:var(--sub);font-size:.9rem;margin:0}
 
 /* ============================================================
+   ANASAYFA — HERO ALTI GÜVEN KARTLARI
+   ============================================================ */
+.hero-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap);
+  margin-top:clamp(46px,6vw,72px);padding-top:clamp(38px,5vw,54px);border-top:1px solid var(--hair)}
+.trust-card{display:flex;flex-direction:column;gap:10px}
+.trust-card .tc-mark{width:34px;height:34px;border-radius:10px;border:1px solid var(--hair-2);
+  display:grid;place-items:center;color:var(--ink);font-size:1rem}
+.trust-card h3{font-family:var(--font-body);font-weight:600;font-size:1.02rem;margin:2px 0 0}
+.trust-card p{color:var(--sub);font-size:.9rem;margin:0;line-height:1.55}
+
+/* Kart içi "Detay" linki */
+.card-link{margin-top:22px;color:var(--ink);font-weight:600;font-size:.88rem;
+  display:inline-flex;align-items:center;gap:7px;width:max-content;transition:gap .16s ease}
+.service-card .card-link{margin-top:auto;padding-top:22px}
+.card-link:hover{gap:12px}
+
+/* ============================================================
+   ANASAYFA — ÖNE ÇIKAN İŞLER / GALERİ
+   ============================================================ */
+.work-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
+.work-card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--hair);
+  border-radius:var(--r);overflow:hidden;transition:border-color .2s ease,transform .2s ease}
+.work-card:hover{border-color:var(--ink);transform:translateY(-3px)}
+.work-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--card-2)}
+.work-media img{width:100%;height:100%;object-fit:cover;display:block}
+.work-card:hover .work-media img{transform:scale(1.03)}
+.work-media img{transition:transform .4s ease}
+.work-ph{position:absolute;inset:0;display:grid;place-items:center;
+  background:
+    radial-gradient(120% 120% at 100% 0%,rgba(23,21,15,.06),transparent 60%),
+    repeating-linear-gradient(135deg,transparent 0 13px,rgba(23,21,15,.035) 13px 14px),
+    var(--card-2)}
+.work-ph span{font-family:var(--font-display);font-size:2.6rem;color:var(--ink);opacity:.22;letter-spacing:.02em}
+.work-body{padding:22px 24px;display:flex;flex-direction:column;gap:8px}
+.work-cat{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.work-body h3{font-size:1.16rem;margin:0}
+.work-body p{color:var(--sub);font-size:.9rem;margin:0}
+
+/* ============================================================
    PAKETLER
    ============================================================ */
 .pkg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap);align-items:stretch}
@@ -297,20 +336,21 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .post-more:hover{border-color:var(--ink)}
 
 /* ============================================================
-   FAQ
+   FAQ (button tabanlı, erişilebilir akordeon)
    ============================================================ */
-.faq{display:grid;gap:0;max-width:860px;margin-inline:auto;border-top:1px solid var(--hair)}
+.faq{max-width:860px;margin-inline:auto;border-top:1px solid var(--hair)}
 .faq-item{border-bottom:1px solid var(--hair)}
-.faq-item summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;
-  align-items:center;gap:20px;padding:26px 4px;font-family:var(--font-display);font-size:1.18rem;
-  color:var(--ink);transition:.15s ease}
-.faq-item summary::-webkit-details-marker{display:none}
-.faq-item summary:hover{color:var(--sub)}
-.faq-item summary::after{content:"+";font-family:var(--font-body);font-size:1.5rem;color:var(--sub);
-  transition:transform .25s ease;flex-shrink:0;font-weight:300}
-.faq-item[open] summary::after{transform:rotate(45deg)}
-.faq-item .faq-a{padding:0 4px 28px;color:var(--sub);font-size:.98rem;max-width:70ch}
-.faq-item .faq-a p{margin:0}
+.faq-q{width:100%;background:none;border:0;cursor:pointer;text-align:left;
+  display:flex;justify-content:space-between;align-items:center;gap:20px;padding:26px 4px;
+  font-family:var(--font-display);font-size:clamp(1.05rem,1.6vw,1.2rem);color:var(--ink);transition:color .15s ease}
+.faq-q:hover{color:var(--sub)}
+.faq-q .faq-ico{flex-shrink:0;font-family:var(--font-body);font-size:1.5rem;font-weight:300;color:var(--sub);
+  line-height:1;transition:transform .28s ease}
+.faq-item.open .faq-q .faq-ico{transform:rotate(45deg)}
+.faq-a{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.faq-item.open .faq-a{max-height:480px}
+.faq-a-inner{padding:0 4px 28px;color:var(--sub);font-size:1rem;max-width:72ch;line-height:1.7}
+.faq-a-inner p{margin:0}
 
 /* ============================================================
    CTA BANT
@@ -422,6 +462,8 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   .card-grid.cols-4{grid-template-columns:repeat(2,1fr)}
   .process-grid{grid-template-columns:repeat(2,1fr)}
   .pkg-grid{grid-template-columns:repeat(2,1fr)}
+  .hero-cards{grid-template-columns:repeat(2,1fr)}
+  .work-grid{grid-template-columns:repeat(2,1fr)}
   .hero-inner{grid-template-columns:1fr;gap:44px}
   .hero-copy{max-width:none}
   .hero-form-card{max-width:520px}
@@ -446,7 +488,8 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 }
 @media (max-width:680px){
   .card-grid.cols-4,.card-grid.cols-3,.card-grid.cols-2,
-  .process-grid,.pkg-grid,.footer-top,.stat-cards{grid-template-columns:1fr}
+  .process-grid,.pkg-grid,.footer-top,.stat-cards,
+  .hero-cards,.work-grid{grid-template-columns:1fr}
   .quote-form{grid-template-columns:1fr}
   .section-heading{flex-direction:column;align-items:flex-start}
   .cta-inner{flex-direction:column;align-items:flex-start}
@@ -455,6 +498,11 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   .hff-foot{flex-direction:column}
   .brand-name{font-size:1.14rem}
   .whatsapp-float{right:16px;bottom:16px}
+}
+@media (max-width:360px){
+  /* Çok dar ekran: header CTA butonu gizlenir (CTA mobil menüde + hero'da + WhatsApp float'ta mevcut) */
+  .header-actions .btn-primary{display:none}
+  .header-inner{gap:14px}
 }
 
 /* ============================================================

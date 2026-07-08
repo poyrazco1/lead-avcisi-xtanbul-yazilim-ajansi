@@ -64,4 +64,13 @@
     });
   }
   Array.prototype.forEach.call(document.querySelectorAll('.js-lead-form'), bindLeadForm);
+
+  // SSS akordeon (button + aria-expanded ile erişilebilir aç/kapa)
+  Array.prototype.forEach.call(document.querySelectorAll('.faq-item .faq-q'), function (btn) {
+    btn.addEventListener('click', function () {
+      var item = btn.parentNode;
+      var open = item.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
 })();

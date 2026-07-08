@@ -3,144 +3,135 @@ $page=$_GET['page']??'home';
 $valid=['home','hizmetler','paketler','referanslar','blog','haberler','kurumsal','iletisim','kvkk','gizlilik','cerez'];
 if(!in_array($page,$valid,true)){$page='home';}
 $s=site_settings();
+$wa=normalize_whatsapp($s['contact_whatsapp']);
 header_html($page);
 ?>
-<?php if($page==='home'): $posts=array_slice(posts_all(),0,3); $refs=array_values(array_filter(references_all(),fn($r)=>!empty($r['active']))); ?>
+<?php if($page==='home'):
+  /* Anasayfaya özel içerik (yalnızca ön yüz sunumu) */
+  $hero_cards=[
+    ['m'=>'⚡','t'=>'Hızlı dönüş','d'=>'Talebinize aynı gün içinde net teklifle geri dönüyoruz.'],
+    ['m'=>'◆','t'=>'Profesyonel hizmet','d'=>'Tasarımdan yayına kadar tek elden, deneyimli ekiple.'],
+    ['m'=>'⌂','t'=>'Yerinde / online destek','d'=>'İster yüz yüze ister uzaktan; süreç boyunca yanınızdayız.'],
+    ['m'=>'✓','t'=>'Şeffaf süreç','d'=>'Kapsam, takvim ve fiyat baştan yazılı ve nettir.'],
+  ];
+  $home_process=[
+    ['no'=>'01','title'=>'Keşif','desc'=>'İhtiyacınızı, hedef kitlenizi ve rakiplerinizi dinleyip kapsamı netleştiriyoruz.'],
+    ['no'=>'02','title'=>'Planlama','desc'=>'Sayfa yapısı, içerik akışı ve tasarım yönünü birlikte planlıyoruz.'],
+    ['no'=>'03','title'=>'Uygulama','desc'=>'Mobil uyumlu, hızlı ve SEO temelli olarak tasarlayıp geliştiriyoruz.'],
+    ['no'=>'04','title'=>'Teslim / Takip','desc'=>'Yayına alıp teslim ediyor, sonrasında performansı takip ediyoruz.'],
+  ];
+  $home_works=[
+    ['cat'=>'Güzellik & Bakım','title'=>'Randevu odaklı salon sitesi','img'=>''],
+    ['cat'=>'Teknik Servis','title'=>'WhatsApp dönüşümlü servis sitesi','img'=>''],
+    ['cat'=>'Kurumsal','title'=>'Çok sayfalı tanıtım sitesi','img'=>''],
+    ['cat'=>'E-Ticaret','title'=>'Ürün ve kampanya vitrini','img'=>''],
+    ['cat'=>'Sağlık & Klinik','title'=>'Randevulu klinik sitesi','img'=>''],
+    ['cat'=>'Yeme & İçme','title'=>'Menü ve rezervasyon sitesi','img'=>''],
+  ];
+  $home_packages=[
+    ['name'=>'Başlangıç','who'=>'Hızlı bir dijital vitrin isteyen yerel işletmeler için.','features'=>['Mobil uyumlu tek sayfa','WhatsApp & arama butonu','Temel SEO kurulumu','Harita ve iletişim'],'featured'=>false],
+    ['name'=>'Standart','who'=>'Kurumsal duruş ve daha fazla içerik isteyenler için.','features'=>['Çok sayfalı yapı','Hizmet & referans bölümleri','Blog / haber altyapısı','Gelişmiş SEO düzeni'],'featured'=>true],
+    ['name'=>'Premium','who'=>'Kendi içeriğini yöneten ve büyümek isteyen markalar için.','features'=>['Yönetim paneli','Randevu / talep sistemi','Çok dil opsiyonu','Özel yazılım & entegrasyon'],'featured'=>false],
+  ];
+?>
 
+<!-- 1) HERO -->
 <section class="hero">
-  <div class="wrap hero-inner">
+  <div class="wrap">
     <div class="hero-copy">
-      <span class="eyebrow"><span class="eb-dot"></span><?=e($s['hero_badge'])?></span>
-      <h1 class="hero-title">Dijitalde <span class="hl">güven veren</span> ve müşteri kazandıran web siteleri.</h1>
+      <span class="eyebrow"><span class="eb-dot"></span>Web Tasarım &amp; Dijital Çözümler</span>
+      <h1 class="hero-title">Markanızı büyüten,<br><span class="hl">satışa çeviren</span> web siteleri.</h1>
       <p class="hero-lead">Tek sayfa siteden yönetim panelli kurumsal siteye kadar; mobil uyumlu, SEO temelli ve <b>WhatsApp’a dönüşüm</b> taşıyan profesyonel web çözümleri kuruyoruz.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="#teklif-hero">Ücretsiz Teklif Al</a>
-        <a class="btn btn-secondary btn-lg" href="/paketler">Paketleri İncele</a>
-      </div>
-      <ul class="hero-trust">
-        <?php foreach(trust_badges() as $b): ?><li><span class="tick">✓</span><?=e($b)?></li><?php endforeach; ?>
-      </ul>
-      <div class="hero-metrics">
-        <div class="metric-card"><span class="metric-value">250<span>+</span></span><span class="metric-label">tamamlanan proje</span></div>
-        <div class="metric-card"><span class="metric-value">8<span> yıl</span></span><span class="metric-label">dijital tecrübe</span></div>
-        <div class="metric-card"><span class="metric-value">4.9<span>/5</span></span><span class="metric-label">müşteri memnuniyeti</span></div>
+        <a class="btn btn-primary btn-lg" href="/iletisim#teklif">Ücretsiz Teklif Al</a>
+        <a class="btn btn-secondary btn-lg" href="/hizmetler">Hizmetleri İncele</a>
       </div>
     </div>
-    <aside class="hero-form-card" id="teklif-hero">
-      <div class="hff-head"><span class="hff-badge">Ücretsiz</span><h2>Hemen Teklif Alın</h2><p>Bilgilerinizi bırakın, aynı gün size dönelim.</p></div>
-      <form class="hero-form js-lead-form" data-status="#heroStatus" novalidate>
-        <div class="hp" aria-hidden="true"><input type="text" name="company_site" tabindex="-1" autocomplete="off"></div>
-        <input name="person" required placeholder="Ad Soyad *">
-        <input name="phone" required placeholder="Telefon *" inputmode="tel">
-        <input name="company" placeholder="Firma adı (opsiyonel)">
-        <select name="service">
-          <option value="">İstediğiniz hizmet</option>
-          <?php foreach(['Tek sayfa web sitesi','Randevulu web sitesi','Çok sayfalı kurumsal site','Yönetim panelli site','E-ticaret','SEO','Reklam / sosyal medya'] as $o): ?><option><?=e($o)?></option><?php endforeach; ?>
-        </select>
-        <label class="kvkk-line"><input type="checkbox" name="kvkk" value="1" required> <a href="/kvkk" target="_blank">KVKK metni</a>ni okudum, iletişim onaylıyorum.</label>
-        <button class="btn btn-primary btn-block btn-lg" type="submit">Teklif İste →</button>
-        <p class="form-status" id="heroStatus" role="status" aria-live="polite"></p>
-      </form>
-      <div class="hff-foot"><a href="tel:<?=e(preg_replace('/\s+/','',$s['contact_phone']))?>"><?=e($s['contact_phone'])?></a><a href="https://wa.me/<?=normalize_whatsapp($s['contact_whatsapp'])?>" target="_blank" rel="noopener">WhatsApp</a></div>
-    </aside>
-  </div>
-</section>
-
-<section class="section">
-  <div class="wrap">
-    <div class="section-heading center"><span class="eyebrow center">Hizmetlerimiz</span><h2 class="section-title">İşinizi büyütecek dijital hizmetler</h2><p class="section-lead">İhtiyacınıza göre doğru paketi kuruyor, gereksiz masraf çıkarmadan sonuç odaklı ilerliyoruz.</p></div>
-    <div class="card-grid cols-4">
-      <?php foreach(front_services() as $i=>$sv): ?>
-      <article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p></article>
+    <div class="hero-cards">
+      <?php foreach($hero_cards as $c): ?>
+      <article class="trust-card"><span class="tc-mark"><?=e($c['m'])?></span><h3><?=e($c['t'])?></h3><p><?=e($c['d'])?></p></article>
       <?php endforeach; ?>
     </div>
   </div>
 </section>
 
+<!-- 2) HİZMETLER -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-heading"><div><span class="eyebrow">Hizmetler</span><h2 class="section-title">İşinizi büyütecek dijital hizmetler</h2><p class="section-lead">İhtiyacınıza göre doğru paketi kuruyor, gereksiz masraf çıkarmadan sonuç odaklı ilerliyoruz.</p></div><a class="head-link" href="/hizmetler">Tüm hizmetler →</a></div>
+    <div class="card-grid cols-3">
+      <?php foreach(array_slice(front_services(),0,6) as $i=>$sv): ?>
+      <article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p><a class="card-link" href="/hizmetler">Detay →</a></article>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<!-- 3) SÜREÇ -->
 <section class="section section-alt">
   <div class="wrap">
-    <div class="section-heading"><div><span class="eyebrow">Neden Xtanbul?</span><h2 class="section-title">Sadece güzel bir site değil, satan bir sistem</h2></div></div>
-    <div class="card-grid cols-3">
-      <?php foreach(why_us_cards() as $w): ?>
-      <article class="feature-card"><h3 class="card-title"><?=e($w['title'])?></h3><p><?=e($w['desc'])?></p></article>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="wrap">
-    <div class="section-heading center"><span class="eyebrow center">Süreçlerimiz</span><h2 class="section-title">Fikirden yayına, net 8 adım</h2><p class="section-lead">Her aşamada ne olduğunu bilirsiniz; sürprizsiz, şeffaf ve planlı ilerleriz.</p></div>
+    <div class="section-heading center"><span class="eyebrow center">Nasıl Çalışıyoruz?</span><h2 class="section-title">Fikirden yayına, net 4 adım</h2><p class="section-lead">Her aşamada ne olduğunu bilirsiniz; sürprizsiz, şeffaf ve planlı ilerleriz.</p></div>
     <div class="process-grid">
-      <?php foreach(process_steps() as $st): ?>
+      <?php foreach($home_process as $st): ?>
       <article class="process-card"><span class="card-index"><?=e($st['no'])?></span><h3 class="card-title"><?=e($st['title'])?></h3><p><?=e($st['desc'])?></p></article>
       <?php endforeach; ?>
     </div>
   </div>
 </section>
 
-<section class="section section-alt" id="paketler">
-  <div class="wrap">
-    <div class="section-heading center"><span class="eyebrow center">Paketler</span><h2 class="section-title">İşletmenize uygun paketi seçin</h2><p class="section-lead">Başlangıç fiyatı tek sayfalık site içindir; kapsam büyüdükçe ihtiyaca göre tekliflendirilir.</p></div>
-    <div class="pkg-grid">
-      <?php foreach(package_cards() as $p): ?>
-      <article class="pkg-card<?=!empty($p['featured'])?' featured':''?>">
-        <?php if(!empty($p['featured'])): ?><span class="pkg-tag">En çok tercih edilen</span><?php endif; ?>
-        <h3 class="pkg-name"><?=e($p['name'])?></h3>
-        <p class="pkg-who"><?=e($p['who'])?></p>
-        <div class="pkg-price"><?=e($p['price'])?></div>
-        <ul class="pkg-list"><?php foreach($p['features'] as $f): ?><li><?=e($f)?></li><?php endforeach; ?></ul>
-        <a class="btn <?=!empty($p['featured'])?'btn-light':'btn-primary'?> btn-block" href="https://wa.me/<?=normalize_whatsapp($s['contact_whatsapp'])?>?text=<?=rawurlencode('Merhaba, '.$p['name'].' paketi için teklif almak istiyorum.')?>" target="_blank" rel="noopener">WhatsApp’tan Teklif Al</a>
-      </article>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-
+<!-- 4) ÖNE ÇIKAN İŞLER / GALERİ -->
 <section class="section">
   <div class="wrap">
-    <div class="section-heading"><div><span class="eyebrow">Referanslar</span><h2 class="section-title">Yaptığımız işler</h2></div><a class="head-link" href="/referanslar">Tümünü gör →</a></div>
-    <div class="card-grid cols-3">
-      <?php foreach(array_slice($refs,0,6) as $r): ?>
-      <article class="ref-card">
-        <div class="ref-logo"><?php if(!empty($r['logo'])): ?><img src="<?=e($r['logo'])?>" alt="<?=e($r['name'])?> logo"><?php else: ?><?=e(first_letter($r['name']))?><?php endif; ?></div>
-        <h3><?=e($r['name'])?></h3>
-        <p><?=e($r['note']??'Web çalışması')?></p>
-        <small class="ref-cat"><?=e($r['category']??'Web Tasarım')?></small>
-        <?php if(!empty($r['website'])): ?><a class="ref-visit" href="<?=e($r['website'])?>" target="_blank" rel="noopener">Web sitesi →</a><?php endif; ?>
+    <div class="section-heading"><div><span class="eyebrow">Öne Çıkan İşler</span><h2 class="section-title">Farklı sektörlerden çalışmalar</h2><p class="section-lead">Yerel işletmelerden kurumsal markalara kadar hazırladığımız web çalışmalarından bir seçki.</p></div><a class="head-link" href="/referanslar">Tümünü gör →</a></div>
+    <div class="work-grid">
+      <?php foreach($home_works as $w): ?>
+      <article class="work-card">
+        <div class="work-media"><?php if(!empty($w['img'])): ?><img src="<?=e($w['img'])?>" alt="<?=e($w['title'])?>" loading="lazy"><?php else: ?><span class="work-ph"><span><?=e(first_letter($w['cat']))?></span></span><?php endif; ?></div>
+        <div class="work-body"><span class="work-cat"><?=e($w['cat'])?></span><h3><?=e($w['title'])?></h3></div>
       </article>
       <?php endforeach; ?>
-      <?php if(!$refs): ?><p class="muted">Aktif referans henüz yayınlanmadı.</p><?php endif; ?>
     </div>
   </div>
 </section>
 
-<section class="section section-alt">
+<!-- 5) PAKETLER -->
+<section class="section section-alt" id="paketler">
   <div class="wrap">
-    <div class="section-heading"><div><span class="eyebrow">Blog / Rehber</span><h2 class="section-title">Web ve SEO rehberleri</h2></div><a class="head-link" href="/blog">Blog’a git →</a></div>
-    <div class="card-grid cols-3">
-      <?php foreach($posts as $p): ?>
-      <article class="post-card"><small><?=e($p['created_at']??'')?></small><h3><a href="/<?=($p['type']??'blog')==='haber'?'haber':'blog'?>/<?=e($p['slug'])?>"><?=e($p['title'])?></a></h3><p><?=e($p['summary'])?></p><a class="post-more" href="/<?=($p['type']??'blog')==='haber'?'haber':'blog'?>/<?=e($p['slug'])?>">Devamını oku →</a></article>
+    <div class="section-heading center"><span class="eyebrow center">Paketler</span><h2 class="section-title">İşletmenize uygun paketi seçin</h2><p class="section-lead">İhtiyacınıza göre kapsamı birlikte belirliyor, net bir teklif çıkarıyoruz.</p></div>
+    <div class="pkg-grid">
+      <?php foreach($home_packages as $p): ?>
+      <article class="pkg-card<?=!empty($p['featured'])?' featured':''?>">
+        <?php if(!empty($p['featured'])): ?><span class="pkg-tag">Öne çıkan</span><?php endif; ?>
+        <h3 class="pkg-name"><?=e($p['name'])?></h3>
+        <p class="pkg-who"><?=e($p['who'])?></p>
+        <ul class="pkg-list"><?php foreach($p['features'] as $f): ?><li><?=e($f)?></li><?php endforeach; ?></ul>
+        <a class="btn <?=!empty($p['featured'])?'btn-light':'btn-primary'?> btn-block" href="https://wa.me/<?=$wa?>?text=<?=rawurlencode('Merhaba, '.$p['name'].' paketi için teklif almak istiyorum.')?>" target="_blank" rel="noopener">Teklif Al</a>
+      </article>
       <?php endforeach; ?>
     </div>
   </div>
 </section>
 
+<!-- 6) SSS -->
 <section class="section">
   <div class="wrap">
     <div class="section-heading center"><span class="eyebrow center">Sık Sorulan Sorular</span><h2 class="section-title">Aklınıza takılanlar</h2></div>
     <div class="faq">
-      <?php foreach(faq_items() as $i=>$fq): ?>
-      <details class="faq-item"<?=$i===0?' open':''?>><summary><?=e($fq['q'])?></summary><div class="faq-a"><p><?=e($fq['a'])?></p></div></details>
+      <?php foreach(faq_items() as $i=>$fq): $fid='faq'.$i; ?>
+      <div class="faq-item<?=$i===0?' open':''?>">
+        <button type="button" class="faq-q" id="<?=$fid?>-q" aria-expanded="<?=$i===0?'true':'false'?>" aria-controls="<?=$fid?>-a"><?=e($fq['q'])?><span class="faq-ico" aria-hidden="true">+</span></button>
+        <div class="faq-a" id="<?=$fid?>-a" role="region" aria-labelledby="<?=$fid?>-q"><div class="faq-a-inner"><p><?=e($fq['a'])?></p></div></div>
+      </div>
       <?php endforeach; ?>
     </div>
   </div>
 </section>
 
+<!-- 7) FİNAL CTA -->
 <section class="cta">
   <div class="wrap cta-inner">
     <div><h2 class="cta-title"><?=e($s['cta_title'])?></h2><p class="cta-text"><?=e($s['cta_desc'])?></p></div>
-    <div class="cta-actions"><a class="btn btn-light btn-lg" href="/iletisim#teklif">Ücretsiz Teklif Al</a><a class="btn btn-line btn-lg" href="https://wa.me/<?=normalize_whatsapp($s['contact_whatsapp'])?>?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp’tan Yaz</a></div>
+    <div class="cta-actions"><a class="btn btn-light btn-lg" href="https://wa.me/<?=$wa?>?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp’tan Yaz</a><a class="btn btn-line btn-lg" href="/iletisim#teklif">İletişime Geç</a></div>
   </div>
 </section>
 
@@ -157,7 +148,7 @@ header_html($page);
 <section class="page-hero"><div class="wrap"><span class="eyebrow">Paketler</span><h1>Başlangıçtan özel yazılıma kadar paketler</h1><p>Başlangıç fiyatı tek sayfalık HTML site içindir. Randevu, çok sayfa, panel ve çok dil ihtiyaca göre tekliflendirilir.</p></div></section>
 <section class="section"><div class="wrap"><div class="pkg-grid">
   <?php foreach(package_cards() as $p): ?>
-  <article class="pkg-card<?=!empty($p['featured'])?' featured':''?>"><?php if(!empty($p['featured'])): ?><span class="pkg-tag">En çok tercih edilen</span><?php endif; ?><h3 class="pkg-name"><?=e($p['name'])?></h3><p class="pkg-who"><?=e($p['who'])?></p><div class="pkg-price"><?=e($p['price'])?></div><ul class="pkg-list"><?php foreach($p['features'] as $f): ?><li><?=e($f)?></li><?php endforeach; ?></ul><a class="btn <?=!empty($p['featured'])?'btn-light':'btn-primary'?> btn-block" href="https://wa.me/<?=normalize_whatsapp($s['contact_whatsapp'])?>?text=<?=rawurlencode('Merhaba, '.$p['name'].' paketi için teklif almak istiyorum.')?>" target="_blank" rel="noopener">WhatsApp’tan Teklif Al</a></article>
+  <article class="pkg-card<?=!empty($p['featured'])?' featured':''?>"><?php if(!empty($p['featured'])): ?><span class="pkg-tag">En çok tercih edilen</span><?php endif; ?><h3 class="pkg-name"><?=e($p['name'])?></h3><p class="pkg-who"><?=e($p['who'])?></p><div class="pkg-price"><?=e($p['price'])?></div><ul class="pkg-list"><?php foreach($p['features'] as $f): ?><li><?=e($f)?></li><?php endforeach; ?></ul><a class="btn <?=!empty($p['featured'])?'btn-light':'btn-primary'?> btn-block" href="https://wa.me/<?=$wa?>?text=<?=rawurlencode('Merhaba, '.$p['name'].' paketi için teklif almak istiyorum.')?>" target="_blank" rel="noopener">WhatsApp’tan Teklif Al</a></article>
   <?php endforeach; ?>
 </div></div></section>
 
