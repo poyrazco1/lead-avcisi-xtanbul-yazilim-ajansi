@@ -21,6 +21,15 @@ if (!is_array($packagePrices)) $packagePrices = [];
 $consulting = $data['consulting'] ?? [];
 if (!is_array($consulting)) $consulting = [];
 $multiLang = !empty($data['multi_lang']);
+// v5 kalite filtreleri + satış ayarı (geriye uyumlu — varsayılanlar eski davranış)
+$source = trim((string)($data['source'] ?? 'Google Places')) ?: 'Google Places';
+$priority = trim((string)($data['priority'] ?? ''));
+$leadNote = trim((string)($data['note'] ?? ''));
+$minRating = (float)($data['min_rating'] ?? 0);
+$minReviews = (int)($data['min_reviews'] ?? 0);
+$onlyNoWebsite = array_key_exists('only_no_website', $data) ? !empty($data['only_no_website']) : true;
+$requirePhone = array_key_exists('require_phone', $data) ? !empty($data['require_phone']) : true;
+$dedupeName = !empty($data['dedupe_name']);
 $searchTerm = $searchTerm ?: ($custom ?: ($sub ?: $category));
 $category = $category ?: 'Serbest Arama';
 $sub = $sub ?: $searchTerm;
@@ -31,7 +40,7 @@ if (!$key) json_response(['ok'=>false,'error'=>'Google Places API key sunucuda t
 $query = trim($searchTerm . ' ' . $district . ' ' . $city . ' Türkiye');
 $endpoint = 'https://places.googleapis.com/v1/places:searchText';
 $fieldMask = 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,nextPageToken';
-$saved = 0; $duplicates = 0; $checked = 0; $skippedWebsite = 0; $skippedPhone = 0; $blacklisted = 0; $errors = [];
+$saved = 0; $duplicates = 0; $checked = 0; $skippedWebsite = 0; $skippedPhone = 0; $skippedFilter = 0; $blacklisted = 0; $errors = []; $found = [];
 $pageToken = null; $pages = 0;
 
 if ($price === '') $price = package_price($package, $packagePrices);
@@ -47,10 +56,15 @@ do {
         $checked++;
         $phone = $p['nationalPhoneNumber'] ?? $p['internationalPhoneNumber'] ?? '';
         $website = trim((string)($p['websiteUri'] ?? ''));
-        if (!$phone) { $skippedPhone++; continue; }
-        if ($website !== '') { $skippedWebsite++; continue; }
+        $rating = (float)($p['rating'] ?? 0);
+        $reviews = (int)($p['userRatingCount'] ?? 0);
+        if ($requirePhone && !$phone) { $skippedPhone++; continue; }
+        if ($onlyNoWebsite && $website !== '') { $skippedWebsite++; continue; }
+        if ($minRating > 0 && $rating < $minRating) { $skippedFilter++; continue; }
+        if ($minReviews > 0 && $reviews < $minReviews) { $skippedFilter++; continue; }
         if (is_blacklisted_phone((string)$phone)) { $blacklisted++; continue; }
         $name = $p['displayName']['text'] ?? 'İşletme';
+        if ($dedupeName && lead_name_exists((string)$name)) { $duplicates++; continue; }
         $lead = [
             'place_id' => $p['id'] ?? '',
             'name' => $name,
@@ -64,7 +78,7 @@ do {
             'maps_url' => $p['googleMapsUri'] ?? '',
             'rating' => $p['rating'] ?? null,
             'review_count' => $p['userRatingCount'] ?? null,
-            'source' => 'Google Places',
+            'source' => $source,
             'assigned_to' => $assignedTo,
             'package_type' => $package,
             'package_price' => $price,
@@ -72,7 +86,15 @@ do {
         ];
         $lead['whatsapp_message'] = sector_message($name, $category, $sub, $price, $payment, $package, $consulting, $multiLang, $packagePrices);
         $r = save_lead($lead);
-        if (!empty($r['saved'])) $saved++;
+        if (!empty($r['saved'])) {
+            $saved++;
+            $found[] = $name;
+            $newId = (int)($r['id'] ?? 0);
+            $extra = [];
+            if ($priority !== '') $extra['priority'] = $priority;
+            if ($leadNote !== '') $extra['note'] = $leadNote;
+            if ($newId && $extra) update_lead_fields($newId, $extra);
+        }
         else if (!empty($r['duplicate'])) $duplicates++;
         else if (!empty($r['blacklisted'])) $blacklisted++;
         else if (!empty($r['error'])) $errors[] = $r['error'];
@@ -81,7 +103,7 @@ do {
     $pageToken = $json['nextPageToken'] ?? null;
 } while ($pageToken && $pages < 3 && $saved < $limit);
 
-json_response(['ok'=>true,'query'=>$query,'saved'=>$saved,'duplicates'=>$duplicates,'checked'=>$checked,'skippedWebsite'=>$skippedWebsite,'skippedPhone'=>$skippedPhone,'blacklisted'=>$blacklisted,'pages'=>$pages,'errors'=>$errors]);
+json_response(['ok'=>true,'query'=>$query,'saved'=>$saved,'duplicates'=>$duplicates,'checked'=>$checked,'skippedWebsite'=>$skippedWebsite,'skippedPhone'=>$skippedPhone,'skippedFilter'=>$skippedFilter,'blacklisted'=>$blacklisted,'pages'=>$pages,'errors'=>$errors,'found'=>array_slice($found,0,20)]);
 
 function google_post(string $url, array $body, string $key, string $fieldMask): array {
     $payload = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

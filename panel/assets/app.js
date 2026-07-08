@@ -22,159 +22,9 @@ function uniqueBy(arr, keyFn){const m=new Map(); arr.forEach(x=>{const k=keyFn(x
 function selectedValues(el){return [...(el?.selectedOptions || [])].map(o=>o.value).filter(Boolean);}
 function optionBaseLabel(o){return o?.dataset?.baseLabel || String(o?.textContent || '').replace(/^[✓□]\s+/, '');}
 function selectedLabels(el){return [...(el?.selectedOptions || [])].map(o=>({value:o.value,label:optionBaseLabel(o)})).filter(x=>x.value);}
-function refreshSelectTicks(el){
-  if(!el || !el.multiple) return;
-  [...el.options].forEach(o=>{
-    if(!o.dataset.baseLabel) o.dataset.baseLabel = String(o.textContent || '').replace(/^[✓□]\s+/, '');
-    o.textContent = `${o.selected ? '✓' : '□'} ${o.dataset.baseLabel}`;
-  });
-  el.classList.toggle('has-selection', selectedValues(el).length > 0);
-}
-function refreshAllSelectTicks(){['mainCategorySelect','subCategorySelect','microSectorSelect','citySelect','districtSelect'].forEach(id=>refreshSelectTicks($('#'+id)));}
-function enableTapMulti(el){
-  if(!el || el.dataset.tapMulti==='1') return;
-  el.dataset.tapMulti='1';
-  const toggle = e => {
-    if(e.target && e.target.tagName==='OPTION'){
-      e.preventDefault();
-      e.target.selected=!e.target.selected;
-      refreshSelectTicks(el);
-      el.dispatchEvent(new Event('change',{bubbles:true}));
-    }
-  };
-  el.addEventListener('mousedown', toggle);
-  el.addEventListener('touchstart', toggle, {passive:false});
-}
-function deselectValue(selectId, value){
-  const el = $('#'+selectId); if(!el) return;
-  [...el.options].forEach(o=>{ if(o.value===value) o.selected=false; });
-  refreshSelectTicks(el);
-  el.dispatchEvent(new Event('change',{bubbles:true}));
-}
 function splitText(v){return String(v||'').split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean);}
 function packagePriceMap(){const m={}; $$('.package-price').forEach(i=>m[i.dataset.package]=i.value.trim()); return m;}
 function packagePrice(key){return packagePriceMap()[key] || packagePrices[key] || '';}
-function fillSelect(el, items, opts={}) {
-  if (!el) return;
-  el.innerHTML = '';
-  if (opts.placeholder && !el.multiple) el.insertAdjacentHTML('beforeend', `<option value="">${escapeHtml(opts.placeholder)}</option>`);
-  items.forEach(i => {
-    const value = typeof i === 'object' ? i.value : i;
-    const label = typeof i === 'object' ? i.label : i;
-    el.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(value)}" data-base-label="${escapeHtml(label)}">${escapeHtml(label)}</option>`);
-  });
-  refreshSelectTicks(el);
-}
-function selectOption(el, value){[...(el?.options||[])].forEach(o=>{if(o.value===value)o.selected=true;}); refreshSelectTicks(el);}
-function initFilters(){
-  const tree = window.SECTOR_TREE || {};
-  const mains = Object.keys(tree);
-  fillSelect($('#mainCategorySelect'), mains);
-  selectOption($('#mainCategorySelect'), 'Teknik Servis & Tamir');
-  fillSubCategories();
-  const cities = Object.keys(window.TR_LOCATIONS || {}).sort((a,b)=>a.localeCompare(b,'tr'));
-  fillSelect($('#citySelect'), cities);
-  selectOption($('#citySelect'), 'İstanbul');
-  fillDistricts();
-  $('#mainCategorySelect')?.addEventListener('change', fillSubCategories);
-  $('#subCategorySelect')?.addEventListener('change', fillMicroSectors);
-  $('#citySelect')?.addEventListener('change', fillDistricts);
-  $('#selectAllDistricts')?.addEventListener('click', () => { $$('#districtSelect option').forEach(o=>o.selected=true); refreshSelectTicks($('#districtSelect')); updateSelectionSummary(); });
-  $('#clearDistricts')?.addEventListener('click', () => { $$('#districtSelect option').forEach(o=>o.selected=false); refreshSelectTicks($('#districtSelect')); updateSelectionSummary(); });
-  $('#clearSectors')?.addEventListener('click', () => { $$('#mainCategorySelect option,#subCategorySelect option,#microSectorSelect option').forEach(o=>o.selected=false); refreshAllSelectTicks(); fillSubCategories(); updateSelectionSummary(); });
-  ['mainCategorySelect','subCategorySelect','microSectorSelect','citySelect','districtSelect'].forEach(id=>enableTapMulti($('#'+id)));
-  ['mainCategorySelect','subCategorySelect','microSectorSelect','citySelect','districtSelect','manualDistricts','customKeywords'].forEach(id=>{
-    const el = $('#'+id); if(el) ['change','input'].forEach(ev=>el.addEventListener(ev, ()=>{ refreshSelectTicks(el); updateSelectionSummary(); }));
-  });
-  document.addEventListener('click', e=>{
-    const chip = e.target.closest('.select-chip'); if(!chip) return;
-    e.preventDefault();
-    deselectValue(chip.dataset.selectId, chip.dataset.value);
-  });
-  updateSelectionSummary();
-}
-function fillSubCategories(){
-  const tree = window.SECTOR_TREE || {};
-  const mains = selectedValues($('#mainCategorySelect'));
-  const items = [];
-  mains.forEach(main => Object.keys(tree[main] || {}).forEach(sub => items.push({value:`${main}||${sub}`, label:`${main} › ${sub}`})));
-  fillSelect($('#subCategorySelect'), items);
-  fillMicroSectors();
-}
-function fillMicroSectors(){
-  const tree = window.SECTOR_TREE || {};
-  const selectedSubs = selectedValues($('#subCategorySelect'));
-  const mains = selectedValues($('#mainCategorySelect'));
-  const items = [];
-  if (selectedSubs.length) {
-    selectedSubs.forEach(v => { const [main, sub] = v.split('||'); (tree[main]?.[sub] || []).forEach(micro => items.push({value:`${main}||${sub}||${micro}`, label:`${sub} › ${micro}`})); });
-  } else if (mains.length === 1) {
-    const main = mains[0]; Object.keys(tree[main] || {}).forEach(sub => (tree[main][sub] || []).forEach(micro => items.push({value:`${main}||${sub}||${micro}`, label:`${sub} › ${micro}`})));
-  }
-  fillSelect($('#microSectorSelect'), items);
-  updateSelectionSummary();
-}
-function fillDistricts(){
-  const cities = selectedValues($('#citySelect'));
-  const items = [];
-  cities.forEach(city => (window.TR_LOCATIONS[city] || []).forEach(d => items.push({value:`${city}||${d}`, label:`${city} / ${d}`})));
-  fillSelect($('#districtSelect'), items);
-  updateSelectionSummary();
-}
-function buildSectorQueries(){
-  const tree = window.SECTOR_TREE || {};
-  const out = [];
-  selectedValues($('#microSectorSelect')).forEach(v => { const [category, sub, micro] = v.split('||'); if (micro) out.push({category, sub_sector:`${sub} / ${micro}`, search_term: micro}); });
-  if (!out.length) selectedValues($('#subCategorySelect')).forEach(v => { const [category, sub] = v.split('||'); if (sub) out.push({category, sub_sector: sub, search_term: sub}); });
-  if (!out.length) selectedValues($('#mainCategorySelect')).forEach(category => { const subs = Object.keys(tree[category] || {}); if (subs.length) subs.forEach(sub => out.push({category, sub_sector: sub, search_term: sub})); else out.push({category, sub_sector: category, search_term: category}); });
-  splitText($('#customKeywords')?.value).forEach(keyword => out.push({category:'Serbest Arama', sub_sector: keyword, search_term: keyword}));
-  return uniqueBy(out, x => `${x.search_term}|${x.category}|${x.sub_sector}`);
-}
-function buildLocations(){
-  const selectedCities = selectedValues($('#citySelect'));
-  const out = [];
-  selectedValues($('#districtSelect')).forEach(v => { const [city, district] = v.split('||'); if (city) out.push({city, district: district || ''}); });
-  splitText($('#manualDistricts')?.value).forEach(v => {
-    const clean = v.replace(/\s+/g,' ').trim(); if (!clean) return;
-    let parts = clean.split(/[\/|>]+/).map(x=>x.trim()).filter(Boolean);
-    if (parts.length >= 2) out.push({city: parts[0], district: parts.slice(1).join(' ')});
-    else selectedCities.forEach(city => out.push({city, district: clean}));
-  });
-  if (!out.length) selectedCities.forEach(city => out.push({city, district: ''}));
-  return uniqueBy(out, x => `${x.city}|${x.district}`);
-}
-function chipList(title, selectId, items, empty='Seçim yok'){
-  const chips = items.map(x=>`<button type="button" class="select-chip" data-select-id="${escapeHtml(selectId)}" data-value="${escapeHtml(x.value)}" title="Seçimi kaldır">✓ ${escapeHtml(x.label)} <span>×</span></button>`).join('');
-  return `<div class="summary-block"><strong>${escapeHtml(title)}</strong><div class="summary-chips">${chips || `<em>${escapeHtml(empty)}</em>`}</div></div>`;
-}
-function textChipList(title, items, empty='Yok'){
-  const chips = items.map(x=>`<span class="text-chip">${escapeHtml(x)}</span>`).join('');
-  return `<div class="summary-block"><strong>${escapeHtml(title)}</strong><div class="summary-chips">${chips || `<em>${escapeHtml(empty)}</em>`}</div></div>`;
-}
-function updateSelectionSummary(){
-  const q = buildSectorQueries(); const loc = buildLocations(); const el = $('#selectionSummary'); if (!el) return;
-  const combos = q.length * loc.length;
-  const mains = selectedLabels($('#mainCategorySelect'));
-  const subs = selectedLabels($('#subCategorySelect'));
-  const micros = selectedLabels($('#microSectorSelect'));
-  const cities = selectedLabels($('#citySelect'));
-  const districts = selectedLabels($('#districtSelect'));
-  const keywords = splitText($('#customKeywords')?.value);
-  const manual = splitText($('#manualDistricts')?.value);
-  el.innerHTML = `
-    <div class="summary-count"><b>${q.length}</b> arama kelimesi × <b>${loc.length}</b> bölge = <b>${combos}</b> sorgu kombinasyonu</div>
-    <div class="summary-grid">
-      ${chipList('Ana kategoriler', 'mainCategorySelect', mains, 'Ana kategori seçilmedi')}
-      ${chipList('Alt kategoriler', 'subCategorySelect', subs, 'Alt kategori seçilmedi')}
-      ${chipList('Alt alt kategori / meslek', 'microSectorSelect', micros, 'Meslek seçilmedi')}
-      ${chipList('Şehirler', 'citySelect', cities, 'Şehir seçilmedi')}
-      ${chipList('İlçeler', 'districtSelect', districts, 'İlçe seçilmedi; şehir geneli aranır')}
-      ${textChipList('Serbest kelimeler', keywords, 'Yok')}
-      ${textChipList('Manuel bölgeler', manual, 'Yok')}
-    </div>
-    <div class="summary-preview"><b>Aranacak ilk 10 kelime:</b> ${(q.slice(0,10).map(x=>`<span>${escapeHtml(x.search_term)}</span>`).join('') || '<em>Serbest kelime veya kategori seç.</em>')} ${q.length>10?`<small>+${q.length-10} daha</small>`:''}</div>
-  `;
-}
 async function api(url, payload=null){
   const opt = payload ? {method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({...payload, csrf: window.LEAD_APP.csrf})} : {credentials:'same-origin',headers:{'Accept':'application/json'}};
   const res = await fetch(url, opt); const txt = await res.text(); let data;
@@ -182,29 +32,195 @@ async function api(url, payload=null){
   if(!res.ok || data.ok===false) throw new Error(data.error || `İşlem başarısız. HTTP ${res.status}`);
   return data;
 }
-function setProgress(p, msg){ $('#progressBox')?.classList.remove('hidden'); $('#progressBar').style.width = `${Math.max(0,Math.min(100,p))}%`; $('#progressText').textContent = msg; }
+function setProgress(p, msg){ const b=$('#progressBar'); if(b) b.style.width = `${Math.max(0,Math.min(100,p))}%`; const t=$('#progressText'); if(t) t.textContent = msg; }
+
+/* ============ Lead Arama Sihirbazı ============ */
+const TREE = () => window.SECTOR_TREE || {};
+const LOCS = () => window.TR_LOCATIONS || {};
+const POPULAR_CITIES = ['İstanbul','Ankara','İzmir','Bursa','Antalya','Kocaeli','Konya','Adana','Gaziantep'];
+const POPULAR_IST = ['Kadıköy','Üsküdar','Bağcılar','Küçükçekmece','Pendik','Ümraniye','Esenyurt','Beylikdüzü','Şişli','Maltepe'];
+const KW_SUGGEST = ['kombi servisi','güzellik salonu','oto ekspertiz','halı yıkama','medikal firma','diş kliniği','mimarlık ofisi'];
+const wiz = { meslek:new Map(), keyword:[], city:new Set(), district:new Map(), manual:[], activeMain:null };
+function trLower(s){return String(s||'').toLocaleLowerCase('tr');}
+function meslekKey(c,s,m){return c+'||'+s+'||'+m;}
+function allMeslekler(){ const out=[]; const t=TREE(); Object.keys(t).forEach(c=>Object.keys(t[c]).forEach(s=>(t[c][s]||[]).forEach(m=>out.push({category:c,sub:s,micro:m})))); return out; }
+function mainMeslekCount(c){ const t=TREE(); let n=0; Object.keys(t[c]||{}).forEach(s=>n+=(t[c][s]||[]).length); return n; }
+
+function initWizard(){
+  if(!$('#catMainList')) return;
+  teamMembers = window.LEAD_APP?.teamMembers || teamMembers;
+  const asg=$('#assignSelect'); if(asg){ asg.innerHTML='<option value="">— Atanmadı —</option>'+(teamMembers||[]).map(t=>`<option>${escapeHtml(t)}</option>`).join(''); }
+  wiz.activeMain = Object.keys(TREE())[0] || null;
+  renderMainList(); renderSubArea(); renderMeslekGrid(); renderKwSuggest();
+  renderCityList(); renderDistrictArea();
+  // tabs
+  $$('#sekTabs .wiz-tab').forEach(b=>b.addEventListener('click',()=>{
+    $$('#sekTabs .wiz-tab').forEach(x=>x.classList.toggle('active',x===b));
+    $$('[data-sekpane]').forEach(p=>p.classList.toggle('active',p.dataset.sekpane===b.dataset.sektab));
+  }));
+  $('#sekSearch')?.addEventListener('input',()=>{ renderSubArea(); renderMeslekGrid(); });
+  $('#meslekSelectAll')?.addEventListener('click',()=>{ $$('#meslekGrid .meslek-chip').forEach(ch=>{ if(!ch.classList.contains('on')) ch.click(); }); });
+  $('#meslekClear')?.addEventListener('click',()=>{ [...wiz.meslek.keys()].forEach(k=>wiz.meslek.delete(k)); renderSubArea(); renderMeslekGrid(); syncSelected(); });
+  $('#kwAdd')?.addEventListener('click',addKeywordFromInput);
+  $('#kwInput')?.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addKeywordFromInput(); } });
+  $('#clearSectors')?.addEventListener('click',()=>{ wiz.meslek.clear(); wiz.keyword=[]; renderSubArea(); renderMeslekGrid(); syncSelected(); });
+  // region
+  $('#citySearch')?.addEventListener('input',renderCityList);
+  $('#manualRegion')?.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); const v=e.target.value.trim(); if(v && !wiz.manual.includes(v)){ wiz.manual.push(v); } e.target.value=''; renderRegionSelected(); updateSummary(); } });
+  $('#selAllDistricts')?.addEventListener('click',()=>{ wiz.city.forEach(c=>(LOCS()[c]||[]).forEach(d=>wiz.district.set(c+'||'+d,{city:c,district:d}))); renderDistrictArea(); renderRegionSelected(); updateSummary(); });
+  $('#clrDistricts')?.addEventListener('click',()=>{ wiz.district.clear(); wiz.manual=[]; renderDistrictArea(); renderRegionSelected(); updateSummary(); });
+  // filters + sales affect summary facts
+  ['fNoWebsite','fPhone','fDedupeName','minRating','minReviews','packageSelect','prioritySelect','assignSelect','limitInput','sourceInput'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',updateSummary); });
+  $('#saveSelection')?.addEventListener('click',saveWizSelection);
+  $('#resetWizard')?.addEventListener('click',resetWizard);
+  restoreWizSelection();
+  syncSelected();
+}
+
+function renderMainList(){
+  const box=$('#catMainList'); if(!box) return; const t=TREE();
+  box.innerHTML = Object.keys(t).map(c=>`<button type="button" class="cat-item ${c===wiz.activeMain?'active':''}" data-main="${escapeHtml(c)}"><span>${escapeHtml(c)}</span><span class="cnt">${mainMeslekCount(c)}</span></button>`).join('');
+  box.querySelectorAll('.cat-item').forEach(b=>b.addEventListener('click',()=>{ wiz.activeMain=b.dataset.main; renderMainList(); renderSubArea(); }));
+}
+function renderSubArea(){
+  const box=$('#catSubArea'); if(!box) return; const t=TREE();
+  const term=trLower($('#sekSearch')?.value||'');
+  if(term.length>=2){
+    const matches=allMeslekler().filter(x=>trLower(x.micro).includes(term)||trLower(x.sub).includes(term)||trLower(x.category).includes(term)).slice(0,120);
+    box.innerHTML = matches.length ? `<div class="sub-block"><div class="sub-block-head"><b>Arama sonuçları (${matches.length})</b></div><div class="sub-block-body">${matches.map(x=>meslekChipHtml(x)).join('')}</div></div>` : `<p class="hint-empty">Eşleşme yok. Serbest Kelimeler sekmesinden ekleyebilirsin.</p>`;
+    bindMeslekChips(box); return;
+  }
+  const c=wiz.activeMain; const subs=t[c]||{};
+  box.innerHTML = Object.keys(subs).map(s=>{
+    const chips=(subs[s]||[]).map(m=>meslekChipHtml({category:c,sub:s,micro:m})).join('');
+    return `<div class="sub-block"><div class="sub-block-head"><b>${escapeHtml(s)}</b><button type="button" class="sub-all" data-sub="${escapeHtml(s)}">Tümünü seç</button></div><div class="sub-block-body">${chips}</div></div>`;
+  }).join('') || '<p class="hint-empty">Bu kategoride meslek yok.</p>';
+  box.querySelectorAll('.sub-all').forEach(b=>b.addEventListener('click',()=>{ const s=b.dataset.sub; (subs[s]||[]).forEach(m=>wiz.meslek.set(meslekKey(c,s,m),{category:c,sub:s,micro:m})); renderSubArea(); syncSelected(); }));
+  bindMeslekChips(box);
+}
+function meslekChipHtml(x){ const k=meslekKey(x.category,x.sub,x.micro); return `<button type="button" class="meslek-chip ${wiz.meslek.has(k)?'on':''}" data-k="${escapeHtml(k)}" data-c="${escapeHtml(x.category)}" data-s="${escapeHtml(x.sub)}" data-m="${escapeHtml(x.micro)}" title="${escapeHtml(x.micro)}">${escapeHtml(x.micro)}</button>`; }
+function bindMeslekChips(scope){ scope.querySelectorAll('.meslek-chip').forEach(ch=>ch.addEventListener('click',()=>{ const k=ch.dataset.k; if(wiz.meslek.has(k)) wiz.meslek.delete(k); else wiz.meslek.set(k,{category:ch.dataset.c,sub:ch.dataset.s,micro:ch.dataset.m}); ch.classList.toggle('on'); syncSelected(); })); }
+function renderMeslekGrid(){
+  const box=$('#meslekGrid'); if(!box) return; const term=trLower($('#sekSearch')?.value||'');
+  let list=allMeslekler(); if(term) list=list.filter(x=>trLower(x.micro).includes(term));
+  const shown=list.slice(0,250);
+  const cnt=$('#meslekCount'); if(cnt) cnt.textContent=`${list.length} meslek${list.length>250?' (ilk 250)':''}`;
+  box.innerHTML = shown.map(x=>meslekChipHtml(x)).join('') || '<p class="hint-empty">Eşleşme yok.</p>';
+  bindMeslekChips(box);
+}
+function addKeywordFromInput(){ const inp=$('#kwInput'); if(!inp) return; const v=inp.value.trim(); if(v && !wiz.keyword.map(trLower).includes(trLower(v))){ wiz.keyword.push(v); } inp.value=''; syncSelected(); }
+function renderKwSuggest(){ const box=$('#kwSuggest'); if(!box) return; box.innerHTML=KW_SUGGEST.map(s=>`<span class="sug">${escapeHtml(s)}</span>`).join(''); box.querySelectorAll('.sug').forEach(el=>el.addEventListener('click',()=>{ const v=el.textContent; if(!wiz.keyword.map(trLower).includes(trLower(v))){ wiz.keyword.push(v); syncSelected(); } })); }
+
+/* Bölge */
+function renderCityList(){
+  const box=$('#cityList'); if(!box) return; const term=trLower($('#citySearch')?.value||'');
+  let cities=Object.keys(LOCS()).sort((a,b)=>a.localeCompare(b,'tr'));
+  if(!term){ const pinned=POPULAR_CITIES.filter(c=>LOCS()[c]); cities=[...pinned,...cities.filter(c=>!pinned.includes(c))]; }
+  else cities=cities.filter(c=>trLower(c).includes(term));
+  box.innerHTML=cities.slice(0,120).map(c=>`<div class="city-row ${wiz.city.has(c)?'on':''}" data-city="${escapeHtml(c)}"><span class="tick">${wiz.city.has(c)?'✓':''}</span>${escapeHtml(c)}</div>`).join('');
+  box.querySelectorAll('.city-row').forEach(r=>r.addEventListener('click',()=>{ const c=r.dataset.city; if(wiz.city.has(c)){ wiz.city.delete(c); [...wiz.district.keys()].forEach(k=>{ if(k.startsWith(c+'||')) wiz.district.delete(k); }); } else wiz.city.add(c); renderCityList(); renderDistrictArea(); renderRegionSelected(); updateSummary(); }));
+}
+function renderDistrictArea(){
+  const box=$('#districtArea'); if(!box) return; const pop=$('#popularDistricts');
+  if(pop){ pop.innerHTML = wiz.city.has('İstanbul') ? POPULAR_IST.map(d=>`<span class="pop" data-d="${escapeHtml(d)}">${escapeHtml(d)}</span>`).join('') : ''; pop.querySelectorAll('.pop').forEach(el=>el.addEventListener('click',()=>{ wiz.district.set('İstanbul||'+el.dataset.d,{city:'İstanbul',district:el.dataset.d}); renderDistrictArea(); renderRegionSelected(); updateSummary(); })); }
+  if(!wiz.city.size){ box.innerHTML='<p class="hint-empty">Önce şehir seç.</p>'; return; }
+  box.innerHTML=[...wiz.city].map(c=>{
+    const chips=(LOCS()[c]||[]).map(d=>{ const k=c+'||'+d; return `<button type="button" class="meslek-chip ${wiz.district.has(k)?'on':''}" data-dk="${escapeHtml(k)}" data-city="${escapeHtml(c)}" data-d="${escapeHtml(d)}">${escapeHtml(d)}</button>`; }).join('');
+    return `<div class="district-city-group"><div class="dg-head">${escapeHtml(c)} ilçeleri</div><div class="district-chips">${chips||'<em class="hint-empty">İlçe verisi yok</em>'}</div></div>`;
+  }).join('');
+  box.querySelectorAll('.meslek-chip').forEach(ch=>ch.addEventListener('click',()=>{ const k=ch.dataset.dk; if(wiz.district.has(k)) wiz.district.delete(k); else wiz.district.set(k,{city:ch.dataset.city,district:ch.dataset.d}); ch.classList.toggle('on'); renderRegionSelected(); updateSummary(); }));
+}
+
+/* Seçili gösterim */
+function chip(label,cls,onx){ return {label,cls,onx}; }
+function renderChips(el,items,empty){ if(!el) return; el.innerHTML = items.length ? items.map((it,i)=>`<span class="sel-chip ${it.cls||''}"><span class="t" title="${escapeHtml(it.label)}">${escapeHtml(it.label)}</span><span class="x" data-i="${i}">×</span></span>`).join('') : `<em>${escapeHtml(empty)}</em>`; }
+function selectedSectorItems(){ const a=[]; wiz.meslek.forEach((v,k)=>a.push({label:v.micro,type:'meslek',key:k})); wiz.keyword.forEach((w,i)=>a.push({label:w,type:'kw',idx:i})); return a; }
+function selectedRegionItems(){ const a=[]; wiz.district.forEach((v,k)=>a.push({label:v.city+' / '+v.district,type:'d',key:k})); wiz.manual.forEach((m,i)=>a.push({label:'✎ '+m,type:'manual',idx:i})); wiz.city.forEach(c=>{ const hasD=[...wiz.district.keys()].some(k=>k.startsWith(c+'||')); if(!hasD) a.push({label:c+' (il geneli)',type:'city',city:c}); }); return a; }
+function syncSelected(){
+  const items=selectedSectorItems();
+  renderChips($('#sekSelected'), items, 'Henüz seçim yok');
+  bindSelChips($('#sekSelected'), items, removeSectorItem);
+  renderRegionSelected();
+  updateSummary();
+}
+function renderRegionSelected(){
+  const items=selectedRegionItems();
+  renderChips($('#regionSelected'), items, 'Henüz seçim yok');
+  bindSelChips($('#regionSelected'), items, removeRegionItem);
+}
+function bindSelChips(el,items,remover){ if(!el) return; el.querySelectorAll('.x').forEach(x=>x.addEventListener('click',()=>{ remover(items[+x.dataset.i]); })); }
+function removeSectorItem(it){ if(!it) return; if(it.type==='meslek') wiz.meslek.delete(it.key); else wiz.keyword.splice(it.idx,1); renderSubArea(); renderMeslekGrid(); syncSelected(); }
+function removeRegionItem(it){ if(!it) return; if(it.type==='d') wiz.district.delete(it.key); else if(it.type==='manual') wiz.manual.splice(it.idx,1); else if(it.type==='city'){ wiz.city.delete(it.city); } renderCityList(); renderDistrictArea(); renderRegionSelected(); updateSummary(); }
+
+/* Sorgu + özet */
+function buildSectorQueries(){
+  const out=[];
+  wiz.meslek.forEach(v=>out.push({category:v.category,sub_sector:v.sub+' / '+v.micro,search_term:v.micro}));
+  wiz.keyword.forEach(w=>out.push({category:'Serbest Arama',sub_sector:w,search_term:w}));
+  const seen=new Set(); return out.filter(x=>{const k=trLower(x.search_term);if(seen.has(k))return false;seen.add(k);return true;});
+}
+function buildLocations(){
+  const out=[]; const seen=new Set();
+  const add=(city,district)=>{ const k=city+'|'+district; if(city&&!seen.has(k)){seen.add(k);out.push({city,district});} };
+  wiz.district.forEach(v=>add(v.city,v.district));
+  wiz.manual.forEach(v=>{ const parts=v.split(/[\/|>]+/).map(x=>x.trim()).filter(Boolean); if(parts.length>=2) add(parts[0],parts.slice(1).join(' ')); else if(wiz.city.size) wiz.city.forEach(c=>add(c,v)); else add(v,''); });
+  wiz.city.forEach(c=>{ const hasD=[...wiz.district.keys()].some(k=>k.startsWith(c+'||')); if(!hasD) add(c,''); });
+  return out;
+}
+function updateSummary(){
+  const q=buildSectorQueries(), loc=buildLocations(); const combos=q.length*loc.length;
+  const limit=Math.min(5000,Math.max(10,parseInt($('#limitInput')?.value||'250',10)));
+  const set=(id,v)=>{const el=$('#'+id); if(el) el.textContent=v;};
+  set('miniSectors',q.length); set('miniRegions',loc.length); set('miniCombos',combos); set('miniLimit',limit);
+  set('ssSectors',q.length); set('ssRegions',loc.length); set('ssCombos',combos);
+  renderChips($('#ssSectorChips'), selectedSectorItems(), 'Seçim yok');
+  renderChips($('#ssRegionChips'), selectedRegionItems(), 'Seçim yok');
+  const pkgSel=$('#packageSelect'); const pkgLabel=pkgSel?pkgSel.options[pkgSel.selectedIndex].text:'';
+  const facts=$('#ssFacts'); if(facts) facts.innerHTML=[
+    ['Paket',pkgLabel],['Temsilci',$('#assignSelect')?.value||'—'],['Öncelik',$('#prioritySelect')?.value||'—'],
+    ['Kayıt limiti',limit],['Web sitesi olmayan',$('#fNoWebsite')?.checked?'evet':'hayır'],['Min. puan',$('#minRating')?.value==='0'?'—':$('#minRating')?.value]
+  ].map(([k,v])=>`<div><span>${escapeHtml(k)}</span><b>${escapeHtml(String(v))}</b></div>`).join('');
+  const miss=[]; if(!q.length) miss.push('En az 1 sektör veya anahtar kelime seçmelisin.'); if(!loc.length) miss.push('En az 1 bölge seçmelisin.');
+  const mbox=$('#ssMissing'); if(mbox) mbox.innerHTML=miss.map(m=>`<div class="miss">${escapeHtml(m)}</div>`).join('');
+  const start=$('#startSearch'); if(start) start.disabled = miss.length>0;
+}
+
+/* localStorage */
+function saveWizSelection(){ try{ localStorage.setItem('xt_wiz', JSON.stringify({meslek:[...wiz.meslek],keyword:wiz.keyword,city:[...wiz.city],district:[...wiz.district],manual:wiz.manual})); toast('Seçim kaydedildi.','ok'); }catch(e){} }
+function restoreWizSelection(){ try{ const d=JSON.parse(localStorage.getItem('xt_wiz')||'null'); if(!d) return; wiz.meslek=new Map(d.meslek||[]); wiz.keyword=d.keyword||[]; wiz.city=new Set(d.city||[]); wiz.district=new Map(d.district||[]); wiz.manual=d.manual||[]; renderMainList(); renderSubArea(); renderMeslekGrid(); renderCityList(); renderDistrictArea(); }catch(e){} }
+function resetWizard(){ wiz.meslek.clear(); wiz.keyword=[]; wiz.city.clear(); wiz.district.clear(); wiz.manual=[]; renderMainList(); renderSubArea(); renderMeslekGrid(); renderCityList(); renderDistrictArea(); syncSelected(); }
+
+/* Tarama başlat */
 async function startSearch(){
-  stopFlag = false;
-  const queries = buildSectorQueries(); const locations = buildLocations(); const targetLimit = Math.min(5000, Math.max(10, parseInt($('#limitInput').value || '100',10)));
-  const packageType = $('#packageSelect').value; const price = packagePrice(packageType); const payment = $('#paymentInput').value.trim(); const assigned_to = '';
-  const consulting = $$('.consulting-check:checked').map(x=>x.value); const multiLang = $('#multiLangCheck').checked; const package_prices = packagePriceMap();
-  if(!queries.length) return toast('En az bir kategori/alt kategori seç veya serbest arama kelimesi yaz.', 'bad');
-  if(!locations.length || locations.some(x=>!x.city)) return toast('En az bir şehir seç. Manuel ilçede şehir/ilçe formatı da kullanabilirsin.', 'bad');
-  $('#startSearch').classList.add('hidden'); $('#stopSearch').classList.remove('hidden');
-  let savedTotal=0, duplicateTotal=0, checked=0, skippedWebsite=0, skippedPhone=0, blacklisted=0, done=0; const totalJobs = queries.length * locations.length;
+  stopFlag=false;
+  const queries=buildSectorQueries(), locations=buildLocations();
+  if(!queries.length) return toast('En az bir sektör/meslek veya anahtar kelime seç.','bad');
+  if(!locations.length) return toast('En az bir bölge seç.','bad');
+  const targetLimit=Math.min(5000,Math.max(10,parseInt($('#limitInput').value||'250',10)));
+  const packageType=$('#packageSelect').value, price=packagePrice(packageType), payment=$('#paymentInput').value.trim();
+  const consulting=$$('.consulting-check:checked').map(x=>x.value), multiLang=$('#multiLangCheck').checked, package_prices=packagePriceMap();
+  const assigned_to=$('#assignSelect')?.value||'', priority=$('#prioritySelect')?.value||'', source=$('#sourceInput')?.value.trim()||'Google Places', note=$('#noteInput')?.value.trim()||'';
+  const min_rating=parseFloat($('#minRating')?.value||'0')||0, min_reviews=parseInt($('#minReviews')?.value||'0',10)||0;
+  const only_no_website=$('#fNoWebsite')?.checked?1:0, require_phone=$('#fPhone')?.checked?1:0, dedupe_name=$('#fDedupeName')?.checked?1:0;
+  $('#resultCard')?.classList.remove('hidden'); $('#startSearch').classList.add('hidden'); $('#stopSearch').classList.remove('hidden');
+  const c={checked:0,saved:0,dup:0,skip:0,err:0}; const foundBox=$('#foundList'); if(foundBox) foundBox.innerHTML='';
+  const upd=()=>{ $('#cChecked').textContent=c.checked; $('#cSaved').textContent=c.saved; $('#cDup').textContent=c.dup; $('#cSkip').textContent=c.skip; $('#cErr').textContent=c.err; };
+  const total=queries.length*locations.length; let done=0;
   try{
-    outer: for (const q of queries) for (const loc of locations) {
-      if(stopFlag || savedTotal >= targetLimit) break outer;
-      done++; const remaining = Math.max(1, targetLimit - savedTotal); const perRequestLimit = Math.min(80, remaining); const region = [loc.district, loc.city].filter(Boolean).join(' / ');
-      setProgress((done-1)/totalJobs*100, `${q.search_term} × ${region} aranıyor... Kaydedilen: ${savedTotal}`);
-      const data = await api('api/search.php', {category:q.category,sub_sector:q.sub_sector,search_term:q.search_term,custom_keyword:'',city:loc.city,district:loc.district,limit:perRequestLimit,price,payment,package:packageType,consulting,multi_lang:multiLang,assigned_to,package_prices});
-      savedTotal += data.saved || 0; duplicateTotal += data.duplicates || 0; checked += data.checked || 0; skippedWebsite += data.skippedWebsite || 0; skippedPhone += data.skippedPhone || 0; blacklisted += data.blacklisted || 0;
-      setProgress(done/totalJobs*100, `${q.search_term} × ${region} bitti. Yeni: ${savedTotal}, tekrar: ${duplicateTotal}, kara liste: ${blacklisted}, web sitesi var diye elenen: ${skippedWebsite}`);
+    outer: for(const q of queries) for(const loc of locations){
+      if(stopFlag||c.saved>=targetLimit) break outer;
+      done++; const remaining=Math.max(1,targetLimit-c.saved); const perLimit=Math.min(80,remaining); const region=[loc.district,loc.city].filter(Boolean).join(' / ');
+      setProgress((done-1)/total*100, `${q.search_term} × ${region} aranıyor...`);
+      const data=await api('api/search.php',{category:q.category,sub_sector:q.sub_sector,search_term:q.search_term,custom_keyword:'',city:loc.city,district:loc.district,limit:perLimit,price,payment,package:packageType,consulting,multi_lang:multiLang,assigned_to,package_prices,source,priority,note,min_rating,min_reviews,only_no_website,require_phone,dedupe_name});
+      c.checked+=data.checked||0; c.saved+=data.saved||0; c.dup+=data.duplicates||0; c.skip+=(data.skippedWebsite||0)+(data.skippedPhone||0)+(data.skippedFilter||0)+(data.blacklisted||0); c.err+=(data.errors||[]).length; upd();
+      (data.found||[]).forEach(n=>{ if(foundBox){ const d=document.createElement('div'); d.className='fi'; d.textContent=n; foundBox.prepend(d); } });
+      setProgress(done/total*100, `${q.search_term} × ${region} bitti. Yeni: ${c.saved}`);
       await loadLeads(false);
     }
-    toast(stopFlag ? 'Arama durduruldu.' : `Tarama bitti. Yeni lead: ${savedTotal}, tekrar: ${duplicateTotal}, kontrol edilen: ${checked}, kara liste: ${blacklisted}`, 'ok');
-  }catch(err){ toast(err.message, 'bad'); setProgress(100, 'Hata: '+err.message); }
-  finally{ $('#startSearch').classList.remove('hidden'); $('#stopSearch').classList.add('hidden'); setTimeout(()=>$('#progressBox').classList.add('hidden'), 3000); await loadLeads(false); await refreshStats(); }
+    toast(stopFlag?`Durduruldu. Yeni lead: ${c.saved}`:`Tarama bitti. Yeni: ${c.saved}, tekrar: ${c.dup}`, 'ok');
+    setProgress(100, stopFlag?'Durduruldu.':`Tamamlandı. Yeni lead: ${c.saved}`);
+  }catch(err){ c.err++; upd(); toast(err.message,'bad'); setProgress(100,'Hata: '+err.message); }
+  finally{ $('#startSearch').classList.remove('hidden'); $('#stopSearch').classList.add('hidden'); await loadLeads(false); await refreshStats(); }
 }
 async function refreshStats(){
   try{
@@ -603,7 +619,7 @@ window.updateLead=updateLead; window.openDetail=openDetail; window.closeDetail=c
 
 document.addEventListener('DOMContentLoaded',()=>{
   initPanelNavigation();
-  initFilters();
+  initWizard();
   $('#startSearch')?.addEventListener('click', startSearch);
   $('#stopSearch')?.addEventListener('click', ()=>{ stopFlag=true; });
   $('#refreshLeads')?.addEventListener('click', ()=>loadLeads(true));

@@ -12,7 +12,7 @@ $packagePrices = setting_get('package_prices', package_default_prices());
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lead Avcısı Panel v5</title>
-  <link rel="stylesheet" href="assets/style.css?v=51">
+  <link rel="stylesheet" href="assets/style.css?v=52">
 </head>
 <body>
   <div class="app-shell">
@@ -90,97 +90,141 @@ $packagePrices = setting_get('package_prices', package_default_prices());
       </section>
       </section>
 
-      <section id="searchPanel" class="card search-card panel-section lead-studio">
-        <div class="studio-hero">
-          <div>
-            <span class="eyebrow">Lead Toplama Stüdyosu</span>
-            <h2>Dağınık seçim yok: sektör, bölge ve teklif akışı tek ekranda.</h2>
-            <p>Önce ne arayacağını seç, sonra nerede arayacağını seç, son adımda teklif paketini belirle. Sağdaki hızlı kontrolde aramaya gidecek tüm seçimleri net görürsün.</p>
-          </div>
-          <div class="studio-badges">
-            <span>✓ API key gizli</span>
-            <span>✓ Web sitesi olan elenir</span>
-            <span>✓ Telefonu olan kaydolur</span>
+      <section id="searchPanel" class="panel-section lead-wizard">
+        <div class="wizard-head">
+          <div><h2>Yeni Lead Tara</h2><p>Sektör, bölge ve filtreleri seç; uygun işletmeleri CRM’e aktar.</p></div>
+          <div class="wizard-mini">
+            <div><b id="miniSectors">0</b><span>sektör/kelime</span></div>
+            <div><b id="miniRegions">0</b><span>bölge</span></div>
+            <div><b id="miniCombos">0</b><span>arama</span></div>
+            <div><b id="miniLimit">250</b><span>limit</span></div>
           </div>
         </div>
 
-        <div class="lead-studio-grid">
-          <div class="studio-main">
-            <article class="studio-step">
-              <div class="step-title"><span>1</span><div><h3>Sektör ve hizmet seç</h3><p>Ana kategori, alt kategori veya direkt meslek seç. Hiç kategori seçmeden sadece kelimeyle de arayabilirsin.</p></div></div>
-              <div class="selector-grid three">
-                <label class="select-card">
-                  <b>Ana kategori</b><small>çoklu seçim</small>
-                  <select id="mainCategorySelect" multiple size="9"></select>
-                </label>
-                <label class="select-card">
-                  <b>Alt kategori</b><small>çoklu seçim</small>
-                  <select id="subCategorySelect" multiple size="9"></select>
-                </label>
-                <label class="select-card">
-                  <b>Alt alt kategori / meslek</b><small>en temiz sonuç</small>
-                  <select id="microSectorSelect" multiple size="9"></select>
-                </label>
+        <div class="wizard-grid">
+          <div class="wizard-main">
+            <article class="step-card">
+              <div class="step-head"><span class="step-number">1</span><div><h3>Sektör ve hizmet seç</h3><p>Hazır sektör, meslek veya serbest kelime ile hedefle.</p></div></div>
+              <div class="sel-search"><input id="sekSearch" type="search" placeholder="Sektör, meslek veya anahtar kelime ara"></div>
+              <div class="wiz-tabs" id="sekTabs">
+                <button type="button" class="wiz-tab active" data-sektab="hazir">Hazır Sektörler</button>
+                <button type="button" class="wiz-tab" data-sektab="meslek">Meslekler</button>
+                <button type="button" class="wiz-tab" data-sektab="kelime">Serbest Kelimeler</button>
               </div>
-              <label class="text-card">
-                <b>Serbest arama kelimeleri</b>
-                <textarea id="customKeywords" rows="4" placeholder="Kategori seçmeden buraya yazabilirsin. Örn:&#10;kombi servisi&#10;halı yıkama&#10;CNC torna&#10;güzellik salonu"></textarea>
-                <small>Virgül, noktalı virgül veya satır satır yaz. Kategori seçimiyle birlikte de çalışır.</small>
-              </label>
-              <div class="studio-actions small-actions"><button id="clearSectors" class="btn ghost mini" type="button">Sektörleri Temizle</button></div>
+              <div class="wiz-pane active" data-sekpane="hazir">
+                <div class="cat-browser">
+                  <div class="cat-main-list" id="catMainList"></div>
+                  <div class="cat-sub-area" id="catSubArea"></div>
+                </div>
+              </div>
+              <div class="wiz-pane" data-sekpane="meslek">
+                <div class="meslek-tools"><span class="mini-label" id="meslekCount"></span><button type="button" class="btn ghost sm" id="meslekSelectAll">Görünenleri seç</button><button type="button" class="btn ghost sm" id="meslekClear">Seçimi temizle</button></div>
+                <div class="chip-grid" id="meslekGrid"></div>
+              </div>
+              <div class="wiz-pane" data-sekpane="kelime">
+                <div class="kw-input"><input id="kwInput" type="text" placeholder="Kelime yaz ve Enter’a bas"><button type="button" class="btn secondary sm" id="kwAdd">Ekle</button></div>
+                <div class="kw-suggest" id="kwSuggest"></div>
+              </div>
+              <div class="step-selected"><b>Seçilenler</b><div class="selected-chips" id="sekSelected"><em>Henüz seçim yok</em></div><button type="button" class="btn ghost sm" id="clearSectors">Tümünü temizle</button></div>
             </article>
 
-            <article class="studio-step">
-              <div class="step-title"><span>2</span><div><h3>Şehir ve ilçe seç</h3><p>Birden fazla şehir ve birden fazla ilçe seçebilirsin. İlçe seçmezsen şehir geneli aranır.</p></div></div>
-              <div class="selector-grid region-grid">
-                <label class="select-card">
-                  <b>Şehirler</b><small>çoklu seçim</small>
-                  <select id="citySelect" multiple size="10"></select>
-                </label>
-                <label class="select-card">
-                  <b>İlçeler</b><small>tıkla seç / tıkla kaldır</small>
-                  <select id="districtSelect" multiple size="10"></select>
-                </label>
-                <label class="text-card manual-region">
-                  <b>Manuel ilçe / mahalle</b>
-                  <textarea id="manualDistricts" rows="6" placeholder="Örn:&#10;Bağcılar, Esenler&#10;Ankara/Çankaya&#10;İzmir/Bornova"></textarea>
-                  <small>Şehir/İlçe formatı daha net sonuç verir.</small>
-                </label>
+            <article class="step-card">
+              <div class="step-head"><span class="step-number">2</span><div><h3>Bölge seç</h3><p>Şehir, ilçe ve semt; çoklu seçim yapabilirsin.</p></div></div>
+              <div class="region-grid">
+                <div class="region-col">
+                  <label class="mini-label">Şehir</label>
+                  <input id="citySearch" type="search" placeholder="Şehir ara">
+                  <div class="scroll-list city-list" id="cityList"></div>
+                </div>
+                <div class="region-col">
+                  <label class="mini-label">İlçeler <span class="inline-tools"><button type="button" class="btn ghost sm" id="selAllDistricts">Tümü</button><button type="button" class="btn ghost sm" id="clrDistricts">Temizle</button></span></label>
+                  <div class="popular-row" id="popularDistricts"></div>
+                  <div class="scroll-list district-area" id="districtArea"><p class="hint-empty">Önce şehir seç.</p></div>
+                  <input id="manualRegion" type="text" placeholder="Manuel bölge / semt (Enter ile ekle)">
+                </div>
               </div>
-              <div class="studio-actions"><button id="selectAllDistricts" class="btn secondary mini" type="button">Listelenen Tüm İlçeleri Seç</button><button id="clearDistricts" class="btn ghost mini" type="button">İlçeleri Temizle</button></div>
+              <div class="step-selected"><b>Seçili bölgeler</b><div class="selected-chips" id="regionSelected"><em>Henüz seçim yok</em></div></div>
             </article>
 
-            <article class="studio-step">
-              <div class="step-title"><span>3</span><div><h3>Teklif ve mesaj ayarı</h3><p>Toplanan lead için WhatsApp mesajı, arama scripti ve teklif/sözleşme akışı bu bilgilerle oluşur.</p></div></div>
-              <div class="selector-grid offer-grid-new">
-                <label class="input-card"><b>Hedef kayıt limiti</b><input id="limitInput" type="number" min="10" max="5000" value="250"><small>Limit dolana kadar kombinasyonlar sırayla gezilir.</small></label>
-                <label class="input-card"><b>Teklif paketi</b><select id="packageSelect"><option value="onepage" selected>Tek sayfalık HTML web sitesi</option><option value="onepage_appointment">Tek sayfalı + randevu alabilen web sitesi</option><option value="multipage">Çok sayfalı web sitesi</option><option value="multipage_appointment">Çok sayfalı + randevu alabilen web sitesi</option><option value="multipage_panel">Çok sayfalı + yönetim panelli web sitesi</option><option value="full_panel_appointment">Yönetim paneli + randevu sistemi olan web sitesi</option></select></label>
-                <label class="input-card"><b>Ödeme adımı</b><input id="paymentInput" type="text" value="%50 kapora ile başlıyoruz"></label>
+            <article class="step-card">
+              <div class="step-head"><span class="step-number">3</span><div><h3>Lead kalite filtreleri</h3><p>Doğru işletmeleri hedeflemek için filtrele.</p></div></div>
+              <div class="quality-filter-grid">
+                <label><input type="checkbox" id="fPhone" checked><span>Telefonu olanları al</span></label>
+                <label><input type="checkbox" id="fWhatsapp" checked><span>WhatsApp uygun telefonları önceliklendir</span></label>
+                <label><input type="checkbox" id="fNoWebsite" checked><span>Web sitesi olmayanları al</span></label>
+                <label><input type="checkbox" id="fWeakWebsite"><span>Zayıf siteleri de işaretle</span></label>
+                <label><input type="checkbox" id="fRated"><span>Sadece puanı olanları al</span></label>
+                <label><input type="checkbox" id="fDedupePhone" checked><span>Aynı telefon tekrar kaydolmasın</span></label>
+                <label><input type="checkbox" id="fDedupeName" checked><span>Aynı firma tekrar kaydolmasın</span></label>
+                <label><input type="checkbox" id="fBlacklist" checked><span>Kara listedekileri alma</span></label>
+                <label><input type="checkbox" id="fNoRecall" checked><span>“Tekrar aranmasın” olanları alma</span></label>
               </div>
-              <div class="offer-box compact-offer">
-                <div><h3>Mesajda gösterilecek ek hizmetler</h3><p>Mesaj kısa kalır ama müşteriye üst paket yolu açar.</p></div>
+              <div class="quality-nums">
+                <label>Min. Google puanı<select id="minRating"><option value="0">Farketmez</option><option value="3.5">3.5+</option><option value="4">4.0+</option><option value="4.5">4.5+</option></select></label>
+                <label>Min. yorum sayısı<input id="minReviews" type="number" min="0" value="0"></label>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <div class="step-head"><span class="step-number">4</span><div><h3>Satış ayarı</h3><p>Toplanan lead bu bilgilerle CRM’e düşer.</p></div></div>
+              <div class="sales-grid">
+                <label>Satış temsilcisi<select id="assignSelect"><option value="">— Atanmadı —</option></select></label>
+                <label>İlgili paket<select id="packageSelect">
+                  <option value="onepage" selected>Tek Sayfa Web Sitesi</option>
+                  <option value="onepage_appointment">Tek Sayfa + Randevu</option>
+                  <option value="multipage">Kurumsal (Çok Sayfa) Web Sitesi</option>
+                  <option value="multipage_appointment">Kurumsal + Randevu</option>
+                  <option value="multipage_panel">Yönetim Panelli Site</option>
+                  <option value="full_panel_appointment">E-Ticaret / Özel Yazılım</option>
+                </select></label>
+                <label>Öncelik başlangıcı<select id="prioritySelect"><option>Soğuk</option><option selected>Ilık</option><option>Sıcak</option><option>Çok sıcak</option></select></label>
+                <label>Hedef kayıt limiti<input id="limitInput" type="number" min="10" max="5000" value="250"></label>
+                <label>Lead kaynağı<input id="sourceInput" type="text" value="Google Places"></label>
+                <label>Ödeme adımı<input id="paymentInput" type="text" value="%50 kapora ile başlıyoruz"></label>
+                <label class="wide-2">İç not (opsiyonel)<input id="noteInput" type="text" placeholder="Bu taramadaki leadlere düşecek not"></label>
+              </div>
+              <details class="msg-extras"><summary>Mesajda gösterilecek ek hizmetler</summary>
                 <div class="checkbox-list">
                   <label><input class="consulting-check" type="checkbox" value="ads" checked> Reklam danışmanlığı</label>
                   <label><input class="consulting-check" type="checkbox" value="ecommerce" checked> E-ticaret danışmanlığı</label>
                   <label><input class="consulting-check" type="checkbox" value="social" checked> Sosyal medya danışmanlığı</label>
-                  <label><input id="multiLangCheck" type="checkbox" checked> Çok dilli web sitesi</label>
+                  <label><input id="multiLangCheck" type="checkbox" checked> Çok dilli site</label>
                 </div>
+              </details>
+            </article>
+
+            <article class="step-card progress-panel hidden" id="resultCard">
+              <div class="step-head"><span class="step-number">5</span><div><h3>Tarama sonucu</h3><p>Canlı ilerleme ve bulunan işletmeler.</p></div></div>
+              <div class="result-counters">
+                <div><b id="cChecked">0</b><span>Kontrol</span></div>
+                <div class="ok"><b id="cSaved">0</b><span>Kaydedildi</span></div>
+                <div><b id="cDup">0</b><span>Zaten vardı</span></div>
+                <div><b id="cSkip">0</b><span>Uygun değil</span></div>
+                <div class="bad"><b id="cErr">0</b><span>Hata</span></div>
               </div>
+              <div class="progress-box" id="progressBox"><div class="bar"><span id="progressBar"></span></div><p id="progressText">Hazırlanıyor...</p></div>
+              <div class="found-list" id="foundList"></div>
             </article>
           </div>
 
-          <aside class="studio-review">
-            <div class="review-card sticky-review">
-              <div class="review-head"><b>Hızlı kontrol</b><span>Aramadan önce son bakış</span></div>
-              <p id="selectionSummary">Seçimler hazırlanıyor...</p>
-              <div class="review-tip">Seçili öğeye tıklayınca seçim kalkar. ✓ seçili, □ seçili değil.</div>
-              <div class="actions-row vertical-actions">
-                <button id="startSearch" class="btn primary" type="button">Lead Toplamaya Başla</button>
-                <button id="stopSearch" class="btn danger hidden" type="button">Durdur</button>
-                <button id="refreshLeads" class="btn ghost" type="button">Listeyi Yenile</button>
-                <a class="btn secondary" href="api/export.php">Excel / CSV İndir</a>
+          <aside class="wizard-summary">
+            <div class="sticky-summary">
+              <div class="ss-head"><b>Tarama Özeti</b><span>Başlatmadan önce kontrol et</span></div>
+              <div class="ss-metrics">
+                <div><b id="ssSectors">0</b><span>sektör/kelime</span></div>
+                <div><b id="ssRegions">0</b><span>bölge</span></div>
+                <div><b id="ssCombos">0</b><span>arama</span></div>
               </div>
-              <div id="progressBox" class="progress-box hidden"><div class="bar"><span id="progressBar"></span></div><p id="progressText">Hazırlanıyor...</p></div>
+              <div class="ss-block"><span class="ss-title">Sektörler</span><div class="selected-chips" id="ssSectorChips"><em>Seçim yok</em></div></div>
+              <div class="ss-block"><span class="ss-title">Bölgeler</span><div class="selected-chips" id="ssRegionChips"><em>Seçim yok</em></div></div>
+              <div class="ss-block"><span class="ss-title">Ayar</span><div class="ss-facts" id="ssFacts"></div></div>
+              <div class="ss-missing" id="ssMissing"></div>
+              <div class="ss-actions">
+                <button id="startSearch" class="btn primary full" type="button" disabled>Lead Taramayı Başlat</button>
+                <button id="stopSearch" class="btn danger full hidden" type="button">Durdur</button>
+                <div class="ss-sub"><button id="saveSelection" class="btn ghost sm" type="button">Seçimi Kaydet</button><button id="resetWizard" class="btn ghost sm" type="button">Temizle</button><button id="refreshLeads" class="btn ghost sm" type="button">Listeyi Yenile</button></div>
+                <a class="btn secondary sm full" href="api/export.php">Excel / CSV İndir</a>
+              </div>
             </div>
           </aside>
         </div>
@@ -385,6 +429,6 @@ $packagePrices = setting_get('package_prices', package_default_prices());
     packages:<?=json_encode(array_map(fn($p)=>$p['label'], package_catalog($packagePrices)), JSON_UNESCAPED_UNICODE)?>
   };</script>
   <script src="assets/data.js?v=46"></script>
-  <script src="assets/app.js?v=51"></script>
+  <script src="assets/app.js?v=52"></script>
 </body>
 </html>

@@ -715,6 +715,20 @@ function list_leads(array $filters = [], int $limit = 500): array {
     return array_reverse($list);
 }
 
+function lead_name_exists(string $name): bool {
+    $name = trim($name); if ($name === '') return false;
+    $m = db();
+    if ($m) {
+        $stmt = $m->prepare('SELECT id FROM leads WHERE name=? LIMIT 1');
+        if (!$stmt) return false;
+        $stmt->bind_param('s', $name); $stmt->execute(); $stmt->bind_result($id); $found = $stmt->fetch(); $stmt->close();
+        return (bool)$found;
+    }
+    ensure_data_files();
+    $list = json_decode((string)@file_get_contents(__DIR__ . '/../data/leads.json'), true) ?: [];
+    foreach ($list as $r) if (trim((string)($r['name'] ?? '')) === $name) return true;
+    return false;
+}
 function get_lead(int $id): ?array {
     $m = db();
     if ($m) {
