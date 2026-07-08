@@ -12,7 +12,7 @@ $packagePrices = setting_get('package_prices', package_default_prices());
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lead Avcısı Panel v5</title>
-  <link rel="stylesheet" href="assets/style.css?v=50">
+  <link rel="stylesheet" href="assets/style.css?v=51">
 </head>
 <body>
   <div class="app-shell">
@@ -52,10 +52,10 @@ $packagePrices = setting_get('package_prices', package_default_prices());
       </header>
 
       <section class="quick-actions">
-        <button class="quick-card" type="button" data-jump="#searchPanel"><b>Yeni Lead Tara</b><span>Sektör + şehir + ilçe seç</span></button>
-        <button class="quick-card" type="button" data-jump="#leadPanel"><b>Leadleri Yönet</b><span>Ara, WhatsApp at, not al</span></button>
-        <button class="quick-card" type="button" data-jump="#contractPanel"><b>Teklif / Sözleşme</b><span>A4 çıktı ve takip linki</span></button>
-        <button class="quick-card" type="button" data-jump="#operationPanel"><b>Operasyon</b><span>Ödeme, revize, teslim</span></button>
+        <button class="quick-card" type="button" data-jump="#searchPanel"><span class="qc-ico">🎯</span><span class="qc-txt"><b>Yeni Lead Tara</b><span>Sektör + şehir seç</span></span></button>
+        <button class="quick-card" type="button" data-jump="#leadPanel"><span class="qc-ico">📋</span><span class="qc-txt"><b>Leadleri Yönet</b><span>Ara, WhatsApp, not</span></span></button>
+        <button class="quick-card" type="button" data-jump="#contractPanel"><span class="qc-ico">📄</span><span class="qc-txt"><b>Teklif / Sözleşme</b><span>A4 çıktı, takip</span></span></button>
+        <button class="quick-card" type="button" data-jump="#operationPanel"><span class="qc-ico">🚀</span><span class="qc-txt"><b>Operasyon</b><span>Ödeme, teslim</span></span></button>
       </section>
 
       <section id="dashboardPanel" class="panel-section active">
@@ -291,39 +291,44 @@ $packagePrices = setting_get('package_prices', package_default_prices());
         <div id="importResult" class="import-result hidden"></div>
       </section>
 
-      <section id="leadPanel" class="card panel-section">
-        <div class="section-head">
-          <div>
-            <h2>Lead Listesi</h2><div class="module-hint">Liste artık sadece burada görünür; diğer modüller ekranı kirletmez.</div>
-            <p>Sıcak lead’ler skoruna göre yukarı çıkar. İstemeyenleri “Tekrar aranmasın” yap; kara listeye düşer.</p>
+      <section id="leadPanel" class="panel-section">
+        <div class="panel-card">
+          <div class="page-header">
+            <div><h2>Lead Listesi</h2><div class="module-hint">Sıcak lead’ler yukarıda. İstemeyenleri “Tekrar aranmasın” yapın; kara listeye düşer.</div></div>
+            <span class="chip count-chip" id="leadCount">0 kayıt</span>
           </div>
-          <div class="filter-row">
-            <input id="quickSearch" type="search" placeholder="İşletme / telefon / not ara">
-            <select id="statusFilter">
-              <option value="">Tüm durumlar</option>
-              <?php foreach (lead_pipeline_statuses() as $st): ?><option><?=e($st)?></option><?php endforeach; ?>
-            </select>
-            <select id="scoreFilter"><option value="">Tüm skorlar</option><option value="80">80+ sıcak</option><option value="60">60+ orta</option></select>
+          <div class="filter-bar">
+            <div class="filter-primary">
+              <input id="quickSearch" type="search" placeholder="İşletme / telefon / not ara">
+              <select id="statusFilter">
+                <option value="">Tüm durumlar</option>
+                <?php foreach (lead_pipeline_statuses() as $st): ?><option><?=e($st)?></option><?php endforeach; ?>
+              </select>
+              <select id="scoreFilter"><option value="">Tüm skorlar</option><option value="80">80+ sıcak</option><option value="60">60+ orta</option></select>
+              <button id="toggleAdvanced" class="btn ghost sm" type="button">Gelişmiş Filtreler ▾</button>
+              <button id="clearFilters" class="btn ghost sm" type="button">Temizle</button>
+            </div>
+            <div class="filter-advanced hidden" id="advancedFilters">
+              <input id="cityFilter" type="text" placeholder="Şehir">
+              <input id="sectorFilter" type="text" placeholder="Sektör">
+              <select id="priorityFilter"><option value="">Tüm öncelikler</option><?php foreach(priority_options() as $p): ?><option><?=e($p)?></option><?php endforeach; ?></select>
+              <select id="assignedFilter"><option value="">Tüm temsilciler</option><?php foreach($teamMembers as $tm): ?><option><?=e($tm)?></option><?php endforeach; ?></select>
+              <select id="websiteFilter"><option value="">Web sitesi: hepsi</option><option value="no">Web sitesi yok</option><option value="yes">Web sitesi var</option></select>
+              <select id="waFilter"><option value="">WhatsApp: hepsi</option><option value="sent">Gönderildi</option><option value="not">Gönderilmedi</option></select>
+              <select id="offerFilter"><option value="">Teklif: hepsi</option><option value="sent">Teklif gönderildi</option><option value="not">Teklif gönderilmedi</option></select>
+              <select id="followFilter"><option value="">Takip: hepsi</option><option value="today">Bugün aranacak</option><option value="overdue">Gecikmiş takip</option></select>
+            </div>
+            <div class="filter-chips" id="filterChips"></div>
           </div>
+          <div class="table-wrap">
+            <table class="data-table lead-table">
+              <colgroup><col class="c-score"><col class="c-firma"><col class="c-iletisim"><col class="c-sektor"><col class="c-dijital"><col class="c-durum"><col class="c-takip"><col class="c-aksiyon"></colgroup>
+              <thead><tr><th>Skor</th><th>Firma / Yetkili</th><th>İletişim</th><th>Sektör / Konum</th><th>Dijital</th><th>Durum</th><th>Takip</th><th>Aksiyon</th></tr></thead>
+              <tbody id="leadRows"></tbody>
+            </table>
+          </div>
+          <div id="mobileCards" class="mobile-cards"></div>
         </div>
-        <div class="filters-grid">
-          <input id="cityFilter" type="text" placeholder="Şehir">
-          <input id="sectorFilter" type="text" placeholder="Sektör">
-          <select id="priorityFilter"><option value="">Tüm öncelikler</option><?php foreach(priority_options() as $p): ?><option><?=e($p)?></option><?php endforeach; ?></select>
-          <select id="assignedFilter"><option value="">Tüm temsilciler</option><?php foreach($teamMembers as $tm): ?><option><?=e($tm)?></option><?php endforeach; ?></select>
-          <select id="websiteFilter"><option value="">Web sitesi: hepsi</option><option value="no">Web sitesi yok</option><option value="yes">Web sitesi var</option></select>
-          <select id="waFilter"><option value="">WhatsApp: hepsi</option><option value="sent">Gönderildi</option><option value="not">Gönderilmedi</option></select>
-          <select id="offerFilter"><option value="">Teklif: hepsi</option><option value="sent">Teklif gönderildi</option><option value="not">Teklif gönderilmedi</option></select>
-          <select id="followFilter"><option value="">Takip: hepsi</option><option value="today">Bugün aranacak</option><option value="overdue">Gecikmiş takip</option></select>
-        </div>
-        <div class="filter-actions"><button id="clearFilters" class="btn ghost mini" type="button">Filtreleri Temizle</button><span class="muted" id="leadCount"></span></div>
-        <div class="table-wrap">
-          <table class="lead-table">
-            <thead><tr><th>Skor</th><th>Firma / Yetkili</th><th>Telefon</th><th>Sektör</th><th>Konum</th><th>Dijital</th><th>Durum</th><th>Son temas</th><th>Takip</th><th>Temsilci</th><th>Aksiyon</th></tr></thead>
-            <tbody id="leadRows"></tbody>
-          </table>
-        </div>
-        <div id="mobileCards" class="mobile-cards"></div>
       </section>
     </main>
   </div>
@@ -380,6 +385,6 @@ $packagePrices = setting_get('package_prices', package_default_prices());
     packages:<?=json_encode(array_map(fn($p)=>$p['label'], package_catalog($packagePrices)), JSON_UNESCAPED_UNICODE)?>
   };</script>
   <script src="assets/data.js?v=46"></script>
-  <script src="assets/app.js?v=50"></script>
+  <script src="assets/app.js?v=51"></script>
 </body>
 </html>

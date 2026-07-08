@@ -249,6 +249,14 @@ function applyClientFilters(rows, f){
     return true;
   });
 }
+const FILTER_LABELS = {status:'Durum',min_score:'Skor',city:'Şehir',sector:'Sektör',priority:'Öncelik',assigned:'Temsilci',website:'Web',wa:'WhatsApp',offer:'Teklif',follow:'Takip'};
+const FILTER_VALTXT = {min_score:{'80':'80+ sıcak','60':'60+ orta'},website:{no:'Site yok',yes:'Site var'},wa:{sent:'Gönderildi',not:'Gönderilmedi'},offer:{sent:'Teklif var',not:'Teklif yok'},follow:{today:'Bugün',overdue:'Gecikmiş'}};
+function renderFilterChips(f){
+  const box=$('#filterChips'); if(!box) return;
+  const chips=[];
+  Object.keys(FILTER_LABELS).forEach(k=>{ const v=f[k]; if(v){ const txt=(FILTER_VALTXT[k]&&FILTER_VALTXT[k][v])||v; chips.push(`<span class="chip">${escapeHtml(FILTER_LABELS[k])}: ${escapeHtml(txt)} <span class="x" data-clear="${k}">×</span></span>`); } });
+  box.innerHTML = chips.join('');
+}
 async function loadLeads(showToast=false){
   const f = currentFilters();
   const qs = new URLSearchParams({q:f.q,status:f.status,min_score:f.min_score,city:f.city,sector:f.sector,assigned_to:f.assigned});
@@ -257,73 +265,86 @@ async function loadLeads(showToast=false){
   rows = applyClientFilters(rows, f);
   lastLeads = rows; renderLeads(rows);
   const c=$('#leadCount'); if(c) c.textContent = `${rows.length} kayıt`;
+  renderFilterChips(f);
   if(showToast) toast(`${rows.length} kayıt listelendi.`);
 }
 function scoreClass(score){score=Number(score||0); return score>=80?'hot':score>=60?'warm':'cold';}
 function prioClass(p){return 'prio-'+String(p||'Ilık').toLowerCase().replace(/ç/g,'c').replace(/ı/g,'i').replace(/\s+/g,'-');}
-function digitalStatus(r){ const parts=[]; if((r.website||'').trim()==='') parts.push('Site yok'); else parts.push(r.website_quality||'Site var'); if(r.rating) parts.push('★'+r.rating); return parts.join(' · '); }
-function rowActions(r){
-  const maps = r.maps_url ? `<a href="${escapeHtml(r.maps_url)}" target="_blank">Harita</a>` : '';
-  return `<div class="row-actions">
-    <button class="btn wa mini" onclick="sendWhatsApp(${Number(r.id)},'first')">WhatsApp</button>
-    <button class="btn call mini" onclick="openCall(${Number(r.id)})">Ara</button>
-    <button class="btn secondary mini" onclick="openDetail(${Number(r.id)})">Detay</button>
-    <div class="action-more">
-      <button type="button" class="btn ghost mini action-more-btn" onclick="toggleActionMenu(this,event)">Diğer ▾</button>
-      <div class="action-menu">
-        <button onclick="sendWhatsApp(${Number(r.id)},'detail')">Teklif mesajı</button>
-        <button onclick="sendWhatsApp(${Number(r.id)},'payment')">Ödeme mesajı</button>
-        <button onclick="sendWhatsApp(${Number(r.id)},'followup')">Takip mesajı</button>
-        <button onclick="sendWhatsApp(${Number(r.id)},'tracking')">Takip linki</button>
-        <a href="contract.php?lead_id=${Number(r.id)}" target="_blank">Sözleşme</a>
-        <a href="quote.php?id=${Number(r.id)}" target="_blank">Teklif (A4)</a>
-        ${maps}
-      </div>
-    </div>
+function digitalCell(r){ const has=(r.website||'').trim()!==''; const top = has ? escapeHtml(r.website_quality||'Site var') : 'Site yok'; const sub = r.rating ? `★${escapeHtml(r.rating)}${r.review_count?` · ${escapeHtml(r.review_count)}`:''}` : ''; return `<span class="cell-sub" style="color:${has?'var(--ink-soft)':'var(--ok)'};font-weight:600">${top}</span>${sub?`<span class="cell-sub">${sub}</span>`:''}`; }
+function actionGroup(r){
+  return `<div class="action-group">
+    <button class="icon-btn wa" title="WhatsApp gönder" onclick="sendWhatsApp(${Number(r.id)},'first')">💬</button>
+    <button class="icon-btn detail" title="Detay" onclick="openDetail(${Number(r.id)})">👁</button>
+    <button class="icon-btn more" title="Diğer işlemler" onclick="openFloatMenu(this,${Number(r.id)},event)">⋯</button>
   </div>`;
 }
-function toggleActionMenu(btn, ev){
+let floatMenuEl=null;
+function closeFloatMenu(){ if(floatMenuEl){ floatMenuEl.remove(); floatMenuEl=null; } }
+function openFloatMenu(btn, id, ev){
   ev.stopPropagation();
-  const wrap = btn.closest('.action-more');
-  const wasOpen = wrap.classList.contains('open');
-  $$('.action-more.open').forEach(w=>w.classList.remove('open'));
-  if(!wasOpen) wrap.classList.add('open');
+  if(floatMenuEl){ closeFloatMenu(); return; }
+  const r = lastLeads.find(x=>Number(x.id)===Number(id)) || {};
+  const items = [
+    ['Ara (script)', `openCall(${id})`],
+    ['Teklif mesajı', `sendWhatsApp(${id},'detail')`],
+    ['Ödeme mesajı', `sendWhatsApp(${id},'payment')`],
+    ['Takip mesajı', `sendWhatsApp(${id},'followup')`],
+    ['Takip linki', `sendWhatsApp(${id},'tracking')`],
+    ['Gönderildi işaretle', `markSentManual(${id})`],
+  ];
+  const links = [
+    ['Sözleşme', `contract.php?lead_id=${id}`],
+    ['Teklif (A4)', `quote.php?id=${id}`],
+  ];
+  if(r.maps_url) links.push(['Haritada aç', r.maps_url]);
+  const menu = document.createElement('div');
+  menu.className='float-menu';
+  menu.innerHTML = items.map(([t,fn])=>`<button type="button" onclick="closeFloatMenu();${fn}">${escapeHtml(t)}</button>`).join('') +
+    links.map(([t,href])=>`<a href="${escapeHtml(href)}" target="_blank" onclick="closeFloatMenu()">${escapeHtml(t)}</a>`).join('');
+  document.body.appendChild(menu);
+  const rect = btn.getBoundingClientRect();
+  const mw = 190; let left = rect.right - mw; if(left<8) left=8;
+  let top = rect.bottom + 6;
+  menu.style.left = left+'px'; menu.style.top = top+'px'; menu.style.minWidth = mw+'px';
+  // Alt tarafta yer yoksa yukarı aç
+  const mh = menu.offsetHeight;
+  if(top + mh > window.innerHeight - 8){ menu.style.top = Math.max(8, rect.top - mh - 6)+'px'; }
+  floatMenuEl = menu;
 }
-document.addEventListener('click', ()=>$$('.action-more.open').forEach(w=>w.classList.remove('open')));
+document.addEventListener('click', closeFloatMenu);
+window.addEventListener('scroll', closeFloatMenu, true);
 function renderLeads(rows){
   const tbody = $('#leadRows'); const cards = $('#mobileCards'); tbody.innerHTML=''; cards.innerHTML='';
-  if(!rows.length){ tbody.innerHTML='<tr><td colspan="11"><div class="empty-state"><div class="ico">📭</div>Kayıt yok. Filtreleri temizleyin ya da yeni lead toplayın.</div></td></tr>'; cards.innerHTML='<div class="empty-state"><div class="ico">📭</div>Kayıt yok.</div>'; return; }
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="ico">📭</div>Kayıt yok. Filtreleri temizleyin ya da yeni lead toplayın.</div></td></tr>'; cards.innerHTML='<div class="empty-state"><div class="ico">📭</div>Kayıt yok.</div>'; return; }
   rows.forEach(r => {
     const sectorText = [r.sector, r.sub_sector].filter(Boolean).join(' / '); const regionText = [r.district, r.city].filter(Boolean).join(' / ');
-    const contact = r.contact_name ? `<small>${escapeHtml(r.contact_name)}${r.contact_position?' · '+escapeHtml(r.contact_position):''}</small>` : '';
-    const lastContact = (r.last_contact_at||'').slice(0,10) || '<span class="muted">—</span>';
-    const follow = (r.next_followup_at||'').slice(0,10) || '<span class="muted">—</span>';
+    const contactName = r.contact_name ? `<span class="cell-sub">${escapeHtml(r.contact_name)}${r.contact_position?' · '+escapeHtml(r.contact_position):''}</span>` : (r.district?`<span class="cell-sub">${escapeHtml(r.district)}</span>`:'');
+    const lastContact = (r.last_contact_at||'').slice(0,10);
+    const follow = (r.next_followup_at||'').slice(0,10);
+    const email = r.email ? `<span class="cell-sub" title="${escapeHtml(r.email)}">✉ ${escapeHtml(r.email)}</span>` : '';
     tbody.insertAdjacentHTML('beforeend', `<tr>
-      <td><span class="score ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span><br><span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span></td>
-      <td><span class="biz-name">${escapeHtml(r.name)}</span>${contact}<small>${escapeHtml(r.address||'')}</small></td>
-      <td><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'')}</a></td>
-      <td>${escapeHtml(sectorText)}</td>
-      <td>${escapeHtml(regionText)}</td>
-      <td><small>${escapeHtml(digitalStatus(r))}</small></td>
+      <td><span class="score-badge ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></td>
+      <td class="cell-firma"><span class="biz-name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</span>${contactName}<span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span></td>
+      <td class="cell-contact"><a href="tel:${escapeHtml(r.phone)}" title="${escapeHtml(r.phone||'')}">${escapeHtml(r.phone||'—')}</a><span class="sub-ico">${r.phone?'<span class="wa-mini">WA</span>':''}${email}</span></td>
+      <td><span class="cell-sub" title="${escapeHtml(sectorText)}" style="color:var(--ink-soft);font-weight:600">${escapeHtml(sectorText||'—')}</span><span class="cell-sub">${escapeHtml(regionText)}</span></td>
+      <td>${digitalCell(r)}</td>
       <td>${statusSelect(r.id, r.status)}</td>
-      <td><small>${lastContact}</small></td>
-      <td><small>${follow}</small></td>
-      <td><small>${escapeHtml(r.assigned_to||'—')}</small></td>
-      <td>${rowActions(r)}</td>
+      <td><span class="cell-sub" title="Son temas">${lastContact||'—'}</span><span class="cell-sub" title="Sonraki takip" style="color:${follow?'var(--warn)':'var(--muted)'}">${follow?'→ '+follow:''}</span></td>
+      <td>${actionGroup(r)}</td>
     </tr>`);
     cards.insertAdjacentHTML('beforeend', `<article class="lead-card">
-      <div class="card-top"><h3>${escapeHtml(r.name)}</h3><span class="score ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></div>
+      <div class="card-top"><h3>${escapeHtml(r.name)}</h3><div class="lc-badges"><span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span><span class="score-badge ${scoreClass(r.lead_score)}">${escapeHtml(r.lead_score||0)}</span></div></div>
+      <p class="lc-contact"><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'—')}</a>${r.email?' · '+escapeHtml(r.email):''}</p>
       <p>${escapeHtml(sectorText)} · ${escapeHtml(regionText)}</p>
-      <p><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone||'')}</a> <span class="badge ${prioClass(r.priority)}">${escapeHtml(r.priority||'Ilık')}</span></p>
-      <p class="muted">${escapeHtml(digitalStatus(r))}</p>
-      ${rowActions(r)}
-      <div class="card-controls">${statusSelect(r.id, r.status)}</div>
+      <p class="muted">${digitalStatus(r)}${lastContact?' · son temas '+lastContact:''}${follow?' · takip '+follow:''}</p>
+      <div class="card-controls">${statusSelect(r.id, r.status)}${actionGroup(r)}</div>
     </article>`);
   });
 }
+function digitalStatus(r){ const has=(r.website||'').trim()!==''; return has?(r.website_quality||'Site var'):'Site yok'; }
 function statusSelect(id, val){
   const statuses = OPT.statuses || ['Aranmadı','WhatsApp gönderildi'];
-  return `<select class="status-select" onchange="updateLead(${Number(id)}, {status:this.value})">${statuses.map(s=>`<option ${s===(val||'Aranmadı')?'selected':''}>${escapeHtml(s)}</option>`).join('')}</select>`;
+  return `<select class="status-select" onclick="event.stopPropagation()" onchange="updateLead(${Number(id)}, {status:this.value})">${statuses.map(s=>`<option ${s===(val||'Aranmadı')?'selected':''}>${escapeHtml(s)}</option>`).join('')}</select>`;
 }
 async function updateLead(id, fields, silent){ try{await api('api/update.php',{id,...fields}); if(!silent) toast('Güncellendi.'); await loadLeads(false); await refreshStats();} catch(e){toast(e.message,'bad');} }
 
@@ -578,7 +599,7 @@ function initPanelNavigation(){
 function openSidebar(){ document.body.classList.add('sidebar-open'); }
 function closeSidebar(){ document.body.classList.remove('sidebar-open'); }
 
-window.updateLead=updateLead; window.openDetail=openDetail; window.closeDetail=closeDetail; window.switchTab=switchTab; window.sendWhatsApp=sendWhatsApp; window.markSentManual=markSentManual; window.openCall=openCall; window.closeCallModal=closeCallModal; window.toggleActionMenu=toggleActionMenu; window.addActivity=addActivity;
+window.updateLead=updateLead; window.openDetail=openDetail; window.closeDetail=closeDetail; window.switchTab=switchTab; window.sendWhatsApp=sendWhatsApp; window.markSentManual=markSentManual; window.openCall=openCall; window.closeCallModal=closeCallModal; window.openFloatMenu=openFloatMenu; window.closeFloatMenu=closeFloatMenu; window.addActivity=addActivity;
 
 document.addEventListener('DOMContentLoaded',()=>{
   initPanelNavigation();
@@ -608,7 +629,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#quickSearch')?.addEventListener('input', ()=>{clearTimeout(window.__q); window.__q=setTimeout(reload,300);});
   $('#topSearch')?.addEventListener('input', ()=>{clearTimeout(window.__q2); window.__q2=setTimeout(reload,300);});
   ['statusFilter','scoreFilter','cityFilter','sectorFilter','priorityFilter','assignedFilter','websiteFilter','waFilter','offerFilter','followFilter'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener(el.tagName==='INPUT'?'input':'change', ()=>{clearTimeout(window.__qf); window.__qf=setTimeout(reload,250);}); });
-  $('#clearFilters')?.addEventListener('click', ()=>{ ['statusFilter','scoreFilter','cityFilter','sectorFilter','priorityFilter','assignedFilter','websiteFilter','waFilter','offerFilter','followFilter','quickSearch'].forEach(id=>{const el=$('#'+id); if(el) el.value='';}); reload(); });
+  const FILTER_IDS = ['statusFilter','scoreFilter','cityFilter','sectorFilter','priorityFilter','assignedFilter','websiteFilter','waFilter','offerFilter','followFilter','quickSearch'];
+  $('#clearFilters')?.addEventListener('click', ()=>{ FILTER_IDS.forEach(id=>{const el=$('#'+id); if(el) el.value='';}); reload(); });
+  // Gelişmiş filtre aç/kapa
+  const CHIP_TO_ID = {status:'statusFilter',min_score:'scoreFilter',city:'cityFilter',sector:'sectorFilter',priority:'priorityFilter',assigned:'assignedFilter',website:'websiteFilter',wa:'waFilter',offer:'offerFilter',follow:'followFilter'};
+  $('#toggleAdvanced')?.addEventListener('click', ()=>{ const a=$('#advancedFilters'); if(a){ const open=a.classList.toggle('hidden'); $('#toggleAdvanced').textContent = 'Gelişmiş Filtreler '+(open?'▾':'▴'); } });
+  $('#filterChips')?.addEventListener('click', e=>{ const x=e.target.closest('[data-clear]'); if(!x) return; const id=CHIP_TO_ID[x.dataset.clear]; const el=id&&$('#'+id); if(el){ el.value=''; reload(); } });
   // sidebar drawer
   $('#sidebarToggle')?.addEventListener('click', openSidebar);
   $('#sidebarOverlay')?.addEventListener('click', closeSidebar);
