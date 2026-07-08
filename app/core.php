@@ -65,15 +65,16 @@ function sector_targets(){return ['Kombici','Halı yıkama','Güzellik salonu','
 
 /* ===== Kurumsal ön yüz içerikleri ===== */
 function front_services(){ return [
- ['icon'=>'🖥️','title'=>'Web Tasarım','desc'=>'Mobil uyumlu, hızlı açılan, satış odaklı modern web sitesi tasarımı.'],
- ['icon'=>'🏢','title'=>'Kurumsal Web Sitesi','desc'=>'Çok sayfalı, güven veren, marka dilinize uygun kurumsal siteler.'],
- ['icon'=>'📄','title'=>'Tek Sayfa Web Sitesi','desc'=>'İşletmenizi tek ekranda anlatan, WhatsApp’a dönüştüren landing page.'],
- ['icon'=>'📅','title'=>'Randevulu Web Sitesi','desc'=>'Ziyaretçiyi randevu/talep formuyla doğrudan müşteriye çeviren yapı.'],
- ['icon'=>'⚙️','title'=>'Yönetim Panelli Site','desc'=>'İçerik, blog, referans ve siparişleri kendiniz yönetin.'],
- ['icon'=>'🛒','title'=>'E-Ticaret Danışmanlığı','desc'=>'Kategori, ürün ve kampanya kurgusuyla satışa hazır altyapı.'],
- ['icon'=>'🔍','title'=>'SEO Temel Kurulum','desc'=>'Teknik SEO, başlık/meta düzeni ve Google görünürlük temeli.'],
- ['icon'=>'📣','title'=>'Google Ads / Sosyal Medya','desc'=>'Doğru hedefleme ile reklam ve sosyal medya danışmanlığı.'],
+ ['icon'=>'🖥️','slug'=>'web-tasarim','title'=>'Web Tasarım','desc'=>'Mobil uyumlu, hızlı açılan, satış odaklı modern web sitesi tasarımı.','long'=>'İşletmenizin dijitaldeki ilk izlenimini belirleyen web sitesini; hızlı açılan, mobilde kusursuz görünen ve ziyaretçiyi müşteriye çeviren bir yapıda tasarlıyoruz. Tasarımı marka dilinize göre kurgular, gereksiz karmaşadan uzak sade ve güven veren bir arayüz oluştururuz.','points'=>['Mobil öncelikli, hızlı açılan tasarım','Marka diline uygun sade arayüz','WhatsApp ve arama odaklı dönüşüm','SEO uyumlu temiz kod yapısı']],
+ ['icon'=>'🏢','slug'=>'kurumsal-web-sitesi','title'=>'Kurumsal Web Sitesi','desc'=>'Çok sayfalı, güven veren, marka dilinize uygun kurumsal siteler.','long'=>'Kurumsal duruşunuzu yansıtan; hizmet, referans, blog ve iletişim sayfalarıyla eksiksiz çok sayfalı web siteleri geliştiriyoruz. İçerik akışını ziyaretçiyi ikna edecek şekilde planlar, marka güvenini öne çıkarırız.','points'=>['Hizmet, referans ve blog sayfaları','Kurumsal içerik ve akış planı','Çok dil opsiyonu','Yönetim paneli entegrasyonu']],
+ ['icon'=>'📄','slug'=>'tek-sayfa-web-sitesi','title'=>'Tek Sayfa Web Sitesi','desc'=>'İşletmenizi tek ekranda anlatan, WhatsApp’a dönüştüren landing page.','long'=>'Hizmetini hızlıca anlatmak ve telefon/WhatsApp üzerinden müşteri almak isteyen yerel işletmeler için tek sayfa siteler kuruyoruz. Hızlı yayına alınır, düşük maliyetlidir ve dönüşüme odaklanır.','points'=>['Tek ekranda net hizmet anlatımı','WhatsApp & arama butonu','Harita ve çalışma saatleri','Hızlı yayına alma']],
+ ['icon'=>'📅','slug'=>'randevulu-web-sitesi','title'=>'Randevulu Web Sitesi','desc'=>'Ziyaretçiyi randevu/talep formuyla doğrudan müşteriye çeviren yapı.','long'=>'Güzellik, sağlık, servis gibi randevu ile çalışan işletmeler için; ziyaretçiyi form üzerinden doğrudan talebe yönlendiren siteler geliştiriyoruz. Gelen talepler size anında ulaşır.','points'=>['Randevu / talep formu','Hizmet alanları ve fiyat bilgisi','KVKK uyumlu form akışı','WhatsApp ile takip']],
+ ['icon'=>'⚙️','slug'=>'yonetim-panelli-site','title'=>'Yönetim Panelli Site','desc'=>'İçerik, blog, referans ve siparişleri kendiniz yönetin.','long'=>'İçeriğini kendisi güncellemek isteyen işletmeler için yönetim panelli siteler kuruyoruz. Blog, haber, referans ve talepleri kod bilmeden kendi panelinizden yönetirsiniz.','points'=>['Kolay içerik yönetim paneli','Blog / haber / referans ekleme','Talep ve sipariş takibi','Yetkili kullanıcı yönetimi']],
+ ['icon'=>'🛒','slug'=>'e-ticaret-danismanligi','title'=>'E-Ticaret Danışmanlığı','desc'=>'Kategori, ürün ve kampanya kurgusuyla satışa hazır altyapı.','long'=>'Online satışa geçmek isteyen markalar için kategori yapısı, ürün sayfası düzeni ve kampanya kurgusuyla satışa hazır bir altyapı planlıyoruz. Dönüşümü artıracak akışı birlikte kuruyoruz.','points'=>['Kategori ve ürün yapısı','Ürün sayfası düzeni','Kampanya ve dönüşüm akışı','Pazaryeri hazırlığı']],
+ ['icon'=>'🔍','slug'=>'seo-temel-kurulum','title'=>'SEO Temel Kurulum','desc'=>'Teknik SEO, başlık/meta düzeni ve Google görünürlük temeli.','long'=>'Sitenizin Google’da bulunabilmesi için teknik SEO temelini kuruyoruz. Başlık ve meta düzeni, site hızı, mobil uyum ve içerik yapısını arama motorlarına uygun hale getiriyoruz.','points'=>['Teknik SEO kurulumu','Başlık ve meta düzeni','Site hızı ve mobil uyum','Google araçları entegrasyonu']],
+ ['icon'=>'📣','slug'=>'reklam-sosyal-medya','title'=>'Google Ads / Sosyal Medya','desc'=>'Doğru hedefleme ile reklam ve sosyal medya danışmanlığı.','long'=>'Doğru kitleye ulaşmak için Google Ads ve sosyal medya reklam danışmanlığı veriyoruz. Bütçenizi verimli kullanacak hedefleme ve içerik yönünü birlikte belirliyoruz.','points'=>['Google Ads danışmanlığı','Sosyal medya reklam kurgusu','Hedefleme ve bütçe planı','Dönüşüm takibi']],
 ];}
+function front_service_find($slug){ foreach(front_services() as $sv){ if(($sv['slug']??'')===$slug) return $sv; } return null; }
 function why_us_cards(){ return [
  ['icon'=>'🎯','title'=>'Satış odaklı tasarım','desc'=>'Sadece güzel değil; ziyaretçiyi arayan ve yazan müşteriye dönüştüren yapı.'],
  ['icon'=>'💬','title'=>'WhatsApp & arama dönüşümü','desc'=>'Her sayfada tek tıkla WhatsApp ve arama ile hızlı iletişim.'],
@@ -114,6 +115,39 @@ function faq_items(){ return [
  ['q'=>'Alan adı ve hosting dahil mi?','a'=>'Domain ve hosting kurulumunu sizin adınıza yapıyor, süreç boyunca yönlendiriyoruz. Bu kalemler paketten bağımsız olarak sağlanır ve teklifte şeffaf şekilde belirtilir.'],
  ['q'=>'Teslim sonrası destek veriyor musunuz?','a'=>'Yayına aldıktan sonra da yanınızdayız. Güncelleme, bakım ve performans takibi için sözleşmeli destek sunuyoruz.'],
 ]; }
+/* ===== Ortak ön yüz bileşen renderer'ları ===== */
+function breadcrumb_html($crumbs){
+ if(!$crumbs) return '';
+ $h='<nav class="breadcrumb" aria-label="Sayfa yolu"><ol>'; $n=count($crumbs);
+ foreach($crumbs as $i=>$c){
+  $last=$i===$n-1;
+  if($last || empty($c['url'])) $h.='<li><span aria-current="page">'.e($c['label']).'</span></li>';
+  else $h.='<li><a href="'.e($c['url']).'">'.e($c['label']).'</a></li>';
+ }
+ return $h.'</ol></nav>';
+}
+function page_hero($o){
+ echo '<section class="page-hero"><div class="wrap">';
+ if(!empty($o['eyebrow'])) echo '<span class="eyebrow">'.e($o['eyebrow']).'</span>';
+ echo '<h1>'.e($o['title']).'</h1>';
+ if(!empty($o['desc'])) echo '<p>'.e($o['desc']).'</p>';
+ if(!empty($o['actions'])){
+  echo '<div class="page-hero-actions">';
+  foreach($o['actions'] as $a){
+   $cls='btn '.($a['style']??'btn-primary'); $blank=!empty($a['blank'])?' target="_blank" rel="noopener"':'';
+   echo '<a class="'.$cls.'" href="'.e($a['href']).'"'.$blank.'>'.e($a['label']).'</a>';
+  }
+  echo '</div>';
+ }
+ if(!empty($o['crumbs'])) echo breadcrumb_html($o['crumbs']);
+ echo '</div></section>';
+}
+function final_cta_html($o=[]){
+ $s=site_settings(); $wa=normalize_whatsapp($s['contact_whatsapp']);
+ $title=$o['title'] ?? $s['cta_title']; $desc=$o['desc'] ?? $s['cta_desc'];
+ echo '<section class="cta"><div class="wrap cta-inner"><div><h2 class="cta-title">'.e($title).'</h2><p class="cta-text">'.e($desc).'</p></div>';
+ echo '<div class="cta-actions"><a class="btn btn-light btn-lg" href="https://wa.me/'.$wa.'?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp’tan Yaz</a><a class="btn btn-line btn-lg" href="/iletisim#teklif">İletişime Geç</a></div></div></section>';
+}
 function meta_for($page){$m=[
  'home'=>['title'=>'Xtanbul Yazılım Agent | Uygun Fiyata SEO Uyumlu Web Sitesi','desc'=>'Tek sayfa, randevulu, çok sayfalı ve yönetim panelli SEO uyumlu web sitesi. Küçük işletmeler için hızlı, modern ve uygun fiyatlı dijital çözümler.'],
  'hizmetler'=>['title'=>'Web Tasarım, SEO, Reklam ve E-Ticaret Danışmanlığı | Xtanbul','desc'=>'Web site tasarımı, SEO, Google Ads, sosyal medya, e-ticaret danışmanlığı, randevulu web sitesi ve yönetim paneli hizmetleri.'],

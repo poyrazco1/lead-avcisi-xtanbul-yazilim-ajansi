@@ -279,6 +279,9 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .work-cat{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
 .work-body h3{font-size:1.16rem;margin:0}
 .work-body p{color:var(--sub);font-size:.9rem;margin:0}
+.work-visit{margin-top:6px;color:var(--ink);font-weight:600;font-size:.88rem;
+  border-bottom:1px solid var(--hair-2);padding-bottom:2px;width:max-content;transition:.16s ease}
+.work-visit:hover{border-color:var(--ink)}
 
 /* ============================================================
    PAKETLER
@@ -326,6 +329,9 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
    ============================================================ */
 .post-card{background:transparent;border-top:1px solid var(--hair);padding:26px 0 0;
   display:flex;flex-direction:column;transition:.18s ease}
+.post-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.post-cat{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--hair-2);border-radius:var(--r-pill);padding:4px 11px}
 .post-card small{color:var(--sub);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
 .post-card h3{font-size:1.28rem;margin:14px 0 12px;line-height:1.22}
 .post-card h3 a{transition:.15s ease}
@@ -364,9 +370,39 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 /* ============================================================
    İÇ SAYFA HERO + MAKALE + İLETİŞİM
    ============================================================ */
-.page-hero{padding:clamp(56px,7vw,96px) 0 clamp(40px,5vw,60px);border-bottom:1px solid var(--hair)}
+.page-hero{padding:clamp(56px,7vw,96px) 0 clamp(40px,5vw,56px);border-bottom:1px solid var(--hair)}
 .page-hero h1{font-size:clamp(2.2rem,4.4vw,3.6rem);letter-spacing:-.025em;max-width:18ch}
 .page-hero p{color:var(--sub);max-width:56ch;font-size:1.1rem;margin:16px 0 0}
+.page-hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+
+/* Breadcrumb — sade, mobilde sarar */
+.breadcrumb{margin-top:30px;padding-top:20px;border-top:1px solid var(--hair)}
+.breadcrumb ol{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;padding:0;
+  font-size:.82rem;color:var(--sub)}
+.breadcrumb li{display:flex;align-items:center;gap:8px}
+.breadcrumb li+li::before{content:"/";color:var(--hair-2)}
+.breadcrumb a{color:var(--sub);transition:color .15s ease}
+.breadcrumb a:hover{color:var(--ink)}
+.breadcrumb [aria-current="page"]{color:var(--ink);font-weight:600}
+
+/* Hizmet detay sayfası */
+.svc-detail{display:grid;grid-template-columns:1.55fr .95fr;gap:clamp(32px,4vw,56px);align-items:start}
+.svc-body{max-width:60ch}
+.svc-body>p{color:var(--ink-2);font-size:1.06rem;line-height:1.8}
+.svc-body h2{font-size:1.5rem;margin:1.4em 0 .5em}
+.svc-points{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:14px}
+.svc-points li{position:relative;padding-left:26px;color:var(--ink-2);font-size:1rem}
+.svc-points li::before{content:"";position:absolute;left:0;top:.55em;width:12px;height:1px;background:var(--ink)}
+.svc-aside{position:sticky;top:96px;background:var(--card);border:1px solid var(--hair);
+  border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow-1)}
+.svc-aside h3{font-family:var(--font-display);font-size:1.35rem;margin-bottom:8px}
+.svc-aside p{color:var(--sub);font-size:.94rem;margin-bottom:20px}
+.svc-aside .btn{margin-bottom:10px}
+.svc-aside .svc-phone{display:block;text-align:center;margin-top:6px;color:var(--ink);font-weight:600;font-size:.94rem}
+.svc-other{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.svc-other a{font-size:.85rem;color:var(--ink-2);border:1px solid var(--hair-2);border-radius:var(--r-pill);
+  padding:8px 15px;transition:.16s ease}
+.svc-other a:hover{border-color:var(--ink);color:var(--ink)}
 
 .split-2{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,5vw,64px);align-items:center}
 .split-2 h2{font-size:clamp(1.7rem,2.8vw,2.4rem)}
@@ -383,7 +419,16 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .article h2{font-size:1.5rem;margin-top:1.6em}
 .article p{color:var(--ink-2);line-height:1.8}
 .article .content{margin-top:1.4em}
+.article .content h2{font-size:1.5rem;margin:1.6em 0 .5em}
+.article .content h3{font-size:1.25rem;margin:1.4em 0 .4em}
+.article .content img{border-radius:var(--r);margin:1.2em 0}
 .page.article{padding-block:var(--section-y)}
+
+/* Hata / 404 sayfası */
+.error-section{text-align:center}
+.error-wrap{max-width:640px;margin-inline:auto}
+.error-code{font-size:clamp(2.2rem,5vw,3.4rem);letter-spacing:-.02em;margin-bottom:.35em}
+.error-lead{color:var(--sub);font-size:1.1rem;margin:0 auto 32px;max-width:52ch}
 
 /* İletişim + teklif formu */
 .contact-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:clamp(28px,4vw,48px);align-items:start}
@@ -459,7 +504,7 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 @media (max-width:1024px){
   .hamburger{display:flex}
   .header-actions .desk-only{display:none}
-  .card-grid.cols-4{grid-template-columns:repeat(2,1fr)}
+  .card-grid.cols-4,.card-grid.cols-3{grid-template-columns:repeat(2,1fr)}
   .process-grid{grid-template-columns:repeat(2,1fr)}
   .pkg-grid{grid-template-columns:repeat(2,1fr)}
   .hero-cards{grid-template-columns:repeat(2,1fr)}
@@ -467,7 +512,8 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   .hero-inner{grid-template-columns:1fr;gap:44px}
   .hero-copy{max-width:none}
   .hero-form-card{max-width:520px}
-  .split-2,.contact-grid{grid-template-columns:1fr}
+  .split-2,.contact-grid,.svc-detail{grid-template-columns:1fr}
+  .svc-aside{position:static}
   .footer-top{grid-template-columns:1fr 1fr;gap:36px}
 
   /* Mobil menü — üstten açılan tam genişlik panel (yatay taşma yok) */

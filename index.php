@@ -1,12 +1,24 @@
 <?php require __DIR__.'/app/core.php';
 $page=$_GET['page']??'home';
 $valid=['home','hizmetler','paketler','referanslar','blog','haberler','kurumsal','iletisim','kvkk','gizlilik','cerez'];
-if(!in_array($page,$valid,true)){$page='home';}
+$notFound=!in_array($page,$valid,true);
 $s=site_settings();
 $wa=normalize_whatsapp($s['contact_whatsapp']);
-header_html($page);
+if($notFound){ http_response_code(404); header_html('home',['title'=>'Sayfa bulunamadı | '.$s['company_name'],'desc'=>'Aradığınız sayfa bulunamadı.']); }
+else { header_html($page); }
 ?>
-<?php if($page==='home'):
+<?php if($notFound): ?>
+<section class="section error-section"><div class="wrap error-wrap">
+  <span class="eyebrow center">Hata 404</span>
+  <h1 class="error-code">Sayfa bulunamadı</h1>
+  <p class="error-lead">Aradığınız sayfa taşınmış veya kaldırılmış olabilir. Aşağıdaki bağlantılardan devam edebilirsiniz.</p>
+  <div class="hero-actions" style="justify-content:center">
+    <a class="btn btn-primary btn-lg" href="/">Anasayfaya Dön</a>
+    <a class="btn btn-secondary btn-lg" href="/iletisim#teklif">İletişime Geç</a>
+  </div>
+</div></section>
+
+<?php elseif($page==='home'):
   /* Anasayfaya özel içerik (yalnızca ön yüz sunumu) */
   $hero_cards=[
     ['m'=>'⚡','t'=>'Hızlı dönüş','d'=>'Talebinize aynı gün içinde net teklifle geri dönüyoruz.'],
@@ -61,7 +73,7 @@ header_html($page);
     <div class="section-heading"><div><span class="eyebrow">Hizmetler</span><h2 class="section-title">İşinizi büyütecek dijital hizmetler</h2><p class="section-lead">İhtiyacınıza göre doğru paketi kuruyor, gereksiz masraf çıkarmadan sonuç odaklı ilerliyoruz.</p></div><a class="head-link" href="/hizmetler">Tüm hizmetler →</a></div>
     <div class="card-grid cols-3">
       <?php foreach(array_slice(front_services(),0,6) as $i=>$sv): ?>
-      <article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p><a class="card-link" href="/hizmetler">Detay →</a></article>
+      <article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p><a class="card-link" href="/hizmetler?h=<?=e($sv['slug'])?>">Detay →</a></article>
       <?php endforeach; ?>
     </div>
   </div>
@@ -135,54 +147,99 @@ header_html($page);
   </div>
 </section>
 
-<?php elseif($page==='hizmetler'): ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Hizmetlerimiz</span><h1>Web tasarım, yazılım, SEO ve dijital pazarlama</h1><p>İşletmenizin ihtiyacına göre doğru dijital paketi kuruyor, ölçülebilir sonuçlar üretiyoruz.</p></div></section>
-<section class="section"><div class="wrap"><div class="card-grid cols-4">
-  <?php foreach(front_services() as $i=>$sv): ?><article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p></article><?php endforeach; ?>
+<?php elseif($page==='hizmetler'):
+  $hslug=$_GET['h']??''; $svc=$hslug?front_service_find($hslug):null;
+  if($svc):
+    page_hero(['eyebrow'=>'Hizmet','title'=>$svc['title'],'desc'=>$svc['desc'],
+      'actions'=>[['label'=>'Ücretsiz Teklif Al','href'=>'/iletisim#teklif','style'=>'btn-primary'],['label'=>'WhatsApp’tan Yaz','href'=>'https://wa.me/'.$wa.'?text='.rawurlencode('Merhaba, '.$svc['title'].' hizmeti için bilgi almak istiyorum.'),'style'=>'btn-secondary','blank'=>true]],
+      'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Hizmetler','url'=>'/hizmetler'],['label'=>$svc['title']]]]);
+?>
+<section class="section"><div class="wrap svc-detail">
+  <div class="svc-body">
+    <p><?=e($svc['long'])?></p>
+    <h2>Bu hizmette neler var?</h2>
+    <ul class="svc-points"><?php foreach($svc['points'] as $pt): ?><li><?=e($pt)?></li><?php endforeach; ?></ul>
+    <h2>Diğer hizmetler</h2>
+    <div class="svc-other"><?php foreach(front_services() as $o): if(($o['slug']??'')===$svc['slug'])continue; ?><a href="/hizmetler?h=<?=e($o['slug'])?>"><?=e($o['title'])?></a><?php endforeach; ?></div>
+  </div>
+  <aside class="svc-aside">
+    <h3>Bu hizmeti mi arıyorsunuz?</h3>
+    <p>Bilgilerinizi bırakın; ihtiyacınıza uygun net bir teklifle aynı gün size dönelim.</p>
+    <a class="btn btn-primary btn-block" href="/iletisim#teklif">Ücretsiz Teklif Al</a>
+    <a class="btn btn-secondary btn-block" href="https://wa.me/<?=$wa?>?text=<?=rawurlencode('Merhaba, '.$svc['title'].' hizmeti için bilgi almak istiyorum.')?>" target="_blank" rel="noopener">WhatsApp’tan Yaz</a>
+    <a class="svc-phone" href="tel:<?=e(preg_replace('/\s+/','',$s['contact_phone']))?>"><?=e($s['contact_phone'])?></a>
+  </aside>
+</div></section>
+<?php final_cta_html(); ?>
+<?php else:
+    page_hero(['eyebrow'=>'Hizmetler','title'=>'Web tasarım, yazılım, SEO ve dijital pazarlama','desc'=>'İşletmenizin ihtiyacına göre doğru dijital paketi kuruyor, ölçülebilir sonuçlar üretiyoruz.','actions'=>[['label'=>'Ücretsiz Teklif Al','href'=>'/iletisim#teklif']],'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Hizmetler']]]);
+?>
+<section class="section"><div class="wrap"><div class="card-grid cols-3">
+  <?php foreach(front_services() as $i=>$sv): ?><article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p><a class="card-link" href="/hizmetler?h=<?=e($sv['slug'])?>">Detay →</a></article><?php endforeach; ?>
 </div></div></section>
 <section class="section section-alt"><div class="wrap"><div class="section-heading center"><span class="eyebrow center">Süreçlerimiz</span><h2 class="section-title">Nasıl ilerliyoruz?</h2></div><div class="process-grid">
-  <?php foreach(process_steps() as $st): ?><article class="process-card"><span class="card-index"><?=e($st['no'])?></span><h3 class="card-title"><?=e($st['title'])?></h3><p><?=e($st['desc'])?></p></article><?php endforeach; ?>
-</div><div class="center mt"><a class="btn btn-primary btn-lg" href="/iletisim#teklif">Teklif Al</a></div></div></section>
+  <?php foreach(array_slice(process_steps(),0,4) as $st): ?><article class="process-card"><span class="card-index"><?=e($st['no'])?></span><h3 class="card-title"><?=e($st['title'])?></h3><p><?=e($st['desc'])?></p></article><?php endforeach; ?>
+</div></div></section>
+<?php final_cta_html(); endif; ?>
 
-<?php elseif($page==='paketler'): ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Paketler</span><h1>Başlangıçtan özel yazılıma kadar paketler</h1><p>Başlangıç fiyatı tek sayfalık HTML site içindir. Randevu, çok sayfa, panel ve çok dil ihtiyaca göre tekliflendirilir.</p></div></section>
+<?php elseif($page==='paketler'):
+  page_hero(['eyebrow'=>'Paketler','title'=>'Başlangıçtan özel yazılıma kadar paketler','desc'=>'Başlangıç fiyatı tek sayfalık HTML site içindir. Randevu, çok sayfa, panel ve çok dil ihtiyaca göre tekliflendirilir.','actions'=>[['label'=>'Ücretsiz Teklif Al','href'=>'/iletisim#teklif']],'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Paketler']]]);
+?>
 <section class="section"><div class="wrap"><div class="pkg-grid">
   <?php foreach(package_cards() as $p): ?>
   <article class="pkg-card<?=!empty($p['featured'])?' featured':''?>"><?php if(!empty($p['featured'])): ?><span class="pkg-tag">En çok tercih edilen</span><?php endif; ?><h3 class="pkg-name"><?=e($p['name'])?></h3><p class="pkg-who"><?=e($p['who'])?></p><div class="pkg-price"><?=e($p['price'])?></div><ul class="pkg-list"><?php foreach($p['features'] as $f): ?><li><?=e($f)?></li><?php endforeach; ?></ul><a class="btn <?=!empty($p['featured'])?'btn-light':'btn-primary'?> btn-block" href="https://wa.me/<?=$wa?>?text=<?=rawurlencode('Merhaba, '.$p['name'].' paketi için teklif almak istiyorum.')?>" target="_blank" rel="noopener">WhatsApp’tan Teklif Al</a></article>
   <?php endforeach; ?>
 </div></div></section>
+<?php final_cta_html(); ?>
 
-<?php elseif($page==='referanslar'): $refs=array_values(array_filter(references_all(),fn($r)=>!empty($r['active']))); ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Referanslar</span><h1>Referanslarımız ve çalışma alanlarımız</h1><p>Farklı sektörlerden işletmeler için hazırladığımız web çalışmaları.</p></div></section>
-<section class="section"><div class="wrap"><div class="card-grid cols-3">
-  <?php foreach($refs as $r): ?>
-  <article class="ref-card"><div class="ref-logo"><?php if(!empty($r['logo'])): ?><img src="<?=e($r['logo'])?>" alt="<?=e($r['name'])?> logo"><?php else: ?><?=e(first_letter($r['name']))?><?php endif; ?></div><h3><?=e($r['name'])?></h3><p><?=e($r['note']??'Web sitesi çalışması')?></p><small class="ref-cat"><?=e($r['category']??'Web Tasarım')?></small><?php if(!empty($r['website'])): ?><a class="ref-visit" href="<?=e($r['website'])?>" target="_blank" rel="noopener">Web sitesini ziyaret et →</a><?php endif; ?></article>
-  <?php endforeach; ?>
-  <?php if(!$refs): ?><p class="muted">Aktif referans henüz yayınlanmadı.</p><?php endif; ?>
-</div></div></section>
+<?php elseif($page==='referanslar'): $refs=array_values(array_filter(references_all(),fn($r)=>!empty($r['active'])));
+  page_hero(['eyebrow'=>'Çalışmalar','title'=>'Referanslarımız ve çalışma alanlarımız','desc'=>'Farklı sektörlerden işletmeler için hazırladığımız web çalışmalarından bir seçki.','actions'=>[['label'=>'Benzer bir proje başlatın','href'=>'/iletisim#teklif']],'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Referanslar']]]);
+?>
+<section class="section"><div class="wrap">
+  <?php if($refs): ?>
+  <div class="work-grid">
+    <?php foreach($refs as $r): ?>
+    <article class="work-card">
+      <div class="work-media"><?php if(!empty($r['logo'])): ?><img src="<?=e($r['logo'])?>" alt="<?=e($r['name'])?>" loading="lazy"><?php else: ?><span class="work-ph"><span><?=e(first_letter($r['name']))?></span></span><?php endif; ?></div>
+      <div class="work-body"><span class="work-cat"><?=e($r['category']??'Web Tasarım')?></span><h3><?=e($r['name'])?></h3><?php if(!empty($r['note'])): ?><p><?=e($r['note'])?></p><?php endif; ?><?php if(!empty($r['website'])): ?><a class="work-visit" href="<?=e($r['website'])?>" target="_blank" rel="noopener">Web sitesini gör →</a><?php endif; ?></div>
+    </article>
+    <?php endforeach; ?>
+  </div>
+  <?php else: ?><p class="muted">Aktif referans henüz yayınlanmadı.</p><?php endif; ?>
+</div></section>
+<?php final_cta_html(); ?>
 
-<?php elseif($page==='blog'||$page==='haberler'): $type=$page==='blog'?'blog':'haber'; $posts=array_values(array_filter(posts_all(),fn($p)=>($p['type']??'blog')===$type)); ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow"><?= $page==='blog'?'Blog / Rehber':'Haberler' ?></span><h1><?= $page==='blog'?'Web sitesi, SEO ve dijital büyüme rehberleri':'Xtanbul duyuruları ve gelişmeler' ?></h1></div></section>
+<?php elseif($page==='blog'||$page==='haberler'): $type=$page==='blog'?'blog':'haber'; $posts=array_values(array_filter(posts_all(),fn($p)=>($p['type']??'blog')===$type));
+  $ptitle = $page==='blog'?'Web sitesi, SEO ve dijital büyüme rehberleri':'Xtanbul duyuruları ve gelişmeler';
+  page_hero(['eyebrow'=>$page==='blog'?'Blog / Rehber':'Haberler','title'=>$ptitle,'desc'=>$page==='blog'?'Uygun fiyatlı web sitesi, SEO, randevu sistemi ve dijital büyüme üzerine kısa rehberler.':'Xtanbul Yazılım Agent’tan duyurular ve gelişmeler.','crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>$page==='blog'?'Blog / Rehber':'Haberler']]]);
+?>
 <section class="section"><div class="wrap"><div class="card-grid cols-3">
-  <?php foreach($posts as $p): ?><article class="post-card"><small><?=e($p['created_at']??'')?></small><h3><a href="/<?= $type==='blog'?'blog':'haber' ?>/<?=e($p['slug'])?>"><?=e($p['title'])?></a></h3><p><?=e($p['summary'])?></p><a class="post-more" href="/<?= $type==='blog'?'blog':'haber' ?>/<?=e($p['slug'])?>">Devamını oku →</a></article><?php endforeach; ?>
+  <?php foreach($posts as $p): ?><article class="post-card"><div class="post-head"><span class="post-cat"><?= $type==='blog'?'Rehber':'Haber' ?></span><?php if(!empty($p['created_at'])): ?><small><?=e($p['created_at'])?></small><?php endif; ?></div><h3><a href="/<?= $type==='blog'?'blog':'haber' ?>/<?=e($p['slug'])?>"><?=e($p['title'])?></a></h3><p><?=e($p['summary'])?></p><a class="post-more" href="/<?= $type==='blog'?'blog':'haber' ?>/<?=e($p['slug'])?>">Devamını oku →</a></article><?php endforeach; ?>
   <?php if(!$posts): ?><p class="muted">Henüz içerik yok.</p><?php endif; ?>
 </div></div></section>
+<?php final_cta_html(); ?>
 
-<?php elseif($page==='kurumsal'): ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Kurumsal</span><h1>Xtanbul Yazılım Agent</h1><p>Küçük ve orta ölçekli işletmeleri hızlı, güvenilir ve satış odaklı web siteleriyle dijitale taşıyan bir yazılım ajansıyız.</p></div></section>
+<?php elseif($page==='kurumsal'):
+  page_hero(['eyebrow'=>'Kurumsal','title'=>'Xtanbul Yazılım Agent','desc'=>'Küçük ve orta ölçekli işletmeleri hızlı, güvenilir ve satış odaklı web siteleriyle dijitale taşıyan bir yazılım ajansıyız.','actions'=>[['label'=>'İletişime Geç','href'=>'/iletisim#teklif'],['label'=>'Çalışmaları Gör','href'=>'/referanslar','style'=>'btn-secondary']],'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Kurumsal']]]);
+?>
 <section class="section"><div class="wrap split-2">
-  <div><h2>Biz kimiz?</h2><p>Web sitesi olmayan ya da mevcut sitesi yeterince müşteri kazandırmayan işletmeler için hızlı açılan, mobilde kusursuz görünen ve WhatsApp’a dönüşüm taşıyan siteler geliştiriyoruz. Gerektiğinde randevu, yönetim paneli, çok dil, e-ticaret ve reklam danışmanlığı ekliyoruz.</p><p>İşimizi teklif, sözleşme ve teslim sürecine kadar şeffaf yönetiyoruz; yayına aldıktan sonra da destek veriyoruz.</p></div>
+  <div><span class="eyebrow">Biz kimiz?</span><h2 class="section-title">Satış odaklı, şeffaf bir dijital atölye</h2><p>Web sitesi olmayan ya da mevcut sitesi yeterince müşteri kazandırmayan işletmeler için hızlı açılan, mobilde kusursuz görünen ve WhatsApp’a dönüşüm taşıyan siteler geliştiriyoruz. Gerektiğinde randevu, yönetim paneli, çok dil, e-ticaret ve reklam danışmanlığı ekliyoruz.</p><p>İşimizi teklif, sözleşme ve teslim sürecine kadar şeffaf yönetiyoruz; yayına aldıktan sonra da destek veriyoruz.</p></div>
   <div class="stat-cards"><article><b>4.999 TL</b><span>başlangıç web sitesi</span></article><article><b>8 adım</b><span>şeffaf süreç</span></article><article><b>1 yıl</b><span>sözleşmeli hizmet</span></article><article><b>7/24</b><span>WhatsApp iletişim</span></article></div>
 </div></section>
-<section class="section section-alt"><div class="wrap"><div class="section-heading center"><span class="eyebrow center">Değerlerimiz</span><h2 class="section-title">Neden bizimle çalışılıyor?</h2></div><div class="card-grid cols-3"><?php foreach(why_us_cards() as $w): ?><article class="feature-card"><h3 class="card-title"><?=e($w['title'])?></h3><p><?=e($w['desc'])?></p></article><?php endforeach; ?></div></div></section>
+<section class="section section-alt"><div class="wrap"><div class="section-heading center"><span class="eyebrow center">Değerlerimiz</span><h2 class="section-title">Nasıl bir yaklaşımla çalışıyoruz?</h2></div><div class="card-grid cols-3"><?php foreach(why_us_cards() as $w): ?><article class="feature-card"><h3 class="card-title"><?=e($w['title'])?></h3><p><?=e($w['desc'])?></p></article><?php endforeach; ?></div></div></section>
+<section class="section"><div class="wrap"><div class="section-heading center"><span class="eyebrow center">Çalışma Prensibimiz</span><h2 class="section-title">Fikirden yayına, net adımlarla</h2></div><div class="process-grid"><?php foreach(array_slice(process_steps(),0,4) as $st): ?><article class="process-card"><span class="card-index"><?=e($st['no'])?></span><h3 class="card-title"><?=e($st['title'])?></h3><p><?=e($st['desc'])?></p></article><?php endforeach; ?></div></div></section>
+<?php final_cta_html(); ?>
 
-<?php elseif($page==='iletisim'): $wa=normalize_whatsapp($s['contact_whatsapp']); ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">İletişim & Teklif</span><h1>Biz mi arayalım?</h1><p>Formu doldurun; sektörünüze uygun 2 örnek tasarım ve net paket teklifiyle sizi biz arayalım.</p></div></section>
+<?php elseif($page==='iletisim'):
+  page_hero(['eyebrow'=>'İletişim & Teklif','title'=>'Biz mi arayalım?','desc'=>'Formu doldurun; sektörünüze uygun 2 örnek tasarım ve net paket teklifiyle sizi biz arayalım.','crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'İletişim']]]);
+?>
 <section class="section"><div class="wrap contact-grid">
   <aside class="contact-info">
-    <article><h3>WhatsApp / Telefon</h3><p><a href="tel:<?=e($s['contact_phone'])?>"><?=e($s['contact_phone'])?></a></p><a class="btn btn-primary" href="https://wa.me/<?=$wa?>?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp’tan Yaz</a></article>
+    <article><h3>Telefon</h3><p><a href="tel:<?=e(preg_replace('/\s+/','',$s['contact_phone']))?>"><?=e($s['contact_phone'])?></a></p><a class="btn btn-primary btn-sm" href="tel:<?=e(preg_replace('/\s+/','',$s['contact_phone']))?>">Hemen Ara</a></article>
+    <article><h3>WhatsApp</h3><p>Aynı gün içinde dönüş yapıyoruz.</p><a class="btn btn-secondary btn-sm" href="https://wa.me/<?=$wa?>?text=Merhaba%2C%20web%20sitesi%20teklifi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp’tan Yaz</a></article>
     <article><h3>E-posta</h3><p><a href="mailto:<?=e($s['contact_email'])?>"><?=e($s['contact_email'])?></a></p></article>
     <article><h3>Adres</h3><p><?=e($s['contact_address'])?></p><a class="btn btn-secondary btn-sm" href="<?=e($s['maps_url'])?>" target="_blank" rel="noopener">Haritada Aç</a></article>
+    <article><h3>Çalışma Saatleri</h3><p>Hafta içi 09:00 – 18:00<br>Cumartesi 10:00 – 15:00</p></article>
   </aside>
   <div class="quote-card" id="teklif">
     <h2>Teklif Formu</h2>
@@ -208,16 +265,19 @@ header_html($page);
   </div>
 </div></section>
 
-<?php elseif($page==='kvkk'): ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">KVKK</span><h1>KVKK Aydınlatma Metni</h1></div></section>
+<?php elseif($page==='kvkk'):
+  page_hero(['eyebrow'=>'KVKK','title'=>'KVKK Aydınlatma Metni','crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'KVKK']]]);
+?>
 <section class="section"><div class="wrap article"><p>Bu metin, Xtanbul Yazılım Agent ile iletişim kuran ziyaretçilerin ve müşterilerin kişisel verilerinin hangi amaçlarla işlendiğini açıklamak için hazırlanmıştır.</p><h2>İşlenen Veriler</h2><p>Ad soyad, telefon, e-posta, firma adı, web sitesi ihtiyacı, teklif ve sözleşme süreçlerinde paylaşılan bilgiler işlenebilir.</p><h2>İşleme Amaçları</h2><p>Teklif hazırlama, iletişim kurma, hizmet sunumu, ödeme ve sözleşme süreçlerini yürütme, müşteri ilişkilerini takip etme ve yasal yükümlülükleri yerine getirme amaçlarıyla veri işlenebilir.</p><h2>Aktarım</h2><p>Veriler; hizmetin yürütülmesi için zorunlu olduğu ölçüde hosting, alan adı, ödeme, muhasebe ve teknik altyapı hizmet sağlayıcılarıyla paylaşılabilir.</p><h2>Haklarınız</h2><p>KVKK kapsamındaki başvuru, düzeltme, silme, itiraz ve bilgi talebi haklarınız için iletişim sayfasındaki kanallardan bize ulaşabilirsiniz.</p><p><b>Not:</b> Bu metin teknik taslaktır; nihai hukuki metin şirket unvanı ve veri işleme süreçlerine göre özelleştirilmelidir.</p></div></section>
 
-<?php elseif($page==='gizlilik'): ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Gizlilik</span><h1>Gizlilik Politikası</h1></div></section>
+<?php elseif($page==='gizlilik'):
+  page_hero(['eyebrow'=>'Gizlilik','title'=>'Gizlilik Politikası','crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Gizlilik']]]);
+?>
 <section class="section"><div class="wrap article"><p>Ziyaretçi ve müşteri bilgileri, yalnızca teklif, iletişim, hizmet sunumu ve yasal yükümlülüklerin yerine getirilmesi amacıyla kullanılır. Bilgiler yetkisiz üçüncü kişilerle paylaşılmaz.</p></div></section>
 
-<?php elseif($page==='cerez'): ?>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Çerez</span><h1>Çerez Politikası</h1></div></section>
+<?php elseif($page==='cerez'):
+  page_hero(['eyebrow'=>'Çerez','title'=>'Çerez Politikası','crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Çerez']]]);
+?>
 <section class="section"><div class="wrap article"><p>Site deneyimini iyileştirmek, güvenlik ve performans sağlamak amacıyla zorunlu çerezler kullanılabilir. Reklam/analitik çerezleri eklenirse kullanıcı bilgilendirmesi ayrıca güncellenir.</p></div></section>
 
 <?php endif; ?>
