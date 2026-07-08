@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>/</loc><priority>1.0</priority></url>
+  <url><loc>/hizmetler</loc><priority>0.95</priority></url>
+  <url><loc>/paketler</loc><priority>0.9</priority></url>
+  <url><loc>/referanslar</loc><priority>0.85</priority></url>
+  <url><loc>/blog</loc><priority>0.85</priority></url>
+  <url><loc>/haberler</loc><priority>0.7</priority></url>
+  <url><loc>/iletisim</loc><priority>0.95</priority></url>
+  <url><loc>/kvkk</loc><priority>0.4</priority></url>
+  <url><loc>/gizlilik</loc><priority>0.4</priority></url>
+  <url><loc>/cerez</loc><priority>0.4</priority></url>
+</urlset>

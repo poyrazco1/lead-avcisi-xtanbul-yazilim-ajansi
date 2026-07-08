@@ -1,0 +1,7 @@
+Options -Indexes
+<FilesMatch "^(composer\.|package\.|README|CHANGELOG|LICENSE)">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.(env|ini|log|sql)$">
+    Require all denied
+</FilesMatch>

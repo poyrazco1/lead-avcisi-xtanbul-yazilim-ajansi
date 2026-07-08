@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Örnek Güzellik Salonu",
+        "website": "https://ornek-guzellik.com",
+        "logo": "",
+        "active": true,
+        "note": "Tek sayfalık randevu odaklı web sitesi"
+    },
+    {
+        "name": "Örnek Teknik Servis",
+        "website": "https://ornek-servis.com",
+        "logo": "",
+        "active": true,
+        "note": "WhatsApp dönüşümlü servis sitesi"
+    },
+    {
+        "name": "Örnek Medikal Firma",
+        "website": "https://ornek-medikal.com",
+        "logo": "",
+        "active": false,
+        "note": "Kurumsal ürün tanıtım sitesi"
+    }
+]

@@ -1,0 +1,10 @@
+Options -Indexes
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^blog/([a-z0-9-]+)/?$ yazi.php?slug=$1 [L,QSA]
+RewriteRule ^haber/([a-z0-9-]+)/?$ yazi.php?slug=$1&type=haber [L,QSA]
+RewriteRule ^([a-z0-9-]+)/?$ index.php?page=$1 [L,QSA]
+<FilesMatch "^(config|core)\.php$">
+Require all denied
+</FilesMatch>
