@@ -385,24 +385,9 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
 .breadcrumb a:hover{color:var(--ink)}
 .breadcrumb [aria-current="page"]{color:var(--ink);font-weight:600}
 
-/* Hizmet detay sayfası */
-.svc-detail{display:grid;grid-template-columns:1.55fr .95fr;gap:clamp(32px,4vw,56px);align-items:start}
-.svc-body{max-width:60ch}
-.svc-body>p{color:var(--ink-2);font-size:1.06rem;line-height:1.8}
-.svc-body h2{font-size:1.5rem;margin:1.4em 0 .5em}
-.svc-points{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:14px}
-.svc-points li{position:relative;padding-left:26px;color:var(--ink-2);font-size:1rem}
-.svc-points li::before{content:"";position:absolute;left:0;top:.55em;width:12px;height:1px;background:var(--ink)}
-.svc-aside{position:sticky;top:96px;background:var(--card);border:1px solid var(--hair);
-  border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow-1)}
-.svc-aside h3{font-family:var(--font-display);font-size:1.35rem;margin-bottom:8px}
-.svc-aside p{color:var(--sub);font-size:.94rem;margin-bottom:20px}
-.svc-aside .btn{margin-bottom:10px}
-.svc-aside .svc-phone{display:block;text-align:center;margin-top:6px;color:var(--ink);font-weight:600;font-size:.94rem}
-.svc-other{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-.svc-other a{font-size:.85rem;color:var(--ink-2);border:1px solid var(--hair-2);border-radius:var(--r-pill);
-  padding:8px 15px;transition:.16s ease}
-.svc-other a:hover{border-color:var(--ink);color:var(--ink)}
+/* Hizmet detay landing — hero altı bilgi kartları (page-hero içinde) */
+.service-hero .hero-cards{border-top:0;padding-top:0;margin-top:clamp(28px,4vw,44px)}
+.service-hero .page-hero-actions{margin-top:26px}
 
 .split-2{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,5vw,64px);align-items:center}
 .split-2 h2{font-size:clamp(1.7rem,2.8vw,2.4rem)}
@@ -512,8 +497,7 @@ body.nav-open .nav-overlay{opacity:1;visibility:visible}
   .hero-inner{grid-template-columns:1fr;gap:44px}
   .hero-copy{max-width:none}
   .hero-form-card{max-width:520px}
-  .split-2,.contact-grid,.svc-detail{grid-template-columns:1fr}
-  .svc-aside{position:static}
+  .split-2,.contact-grid{grid-template-columns:1fr}
   .footer-top{grid-template-columns:1fr 1fr;gap:36px}
 
   /* Mobil menü — üstten açılan tam genişlik panel (yatay taşma yok) */

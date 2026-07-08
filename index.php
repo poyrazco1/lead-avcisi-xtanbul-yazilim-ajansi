@@ -149,28 +149,101 @@ else { header_html($page); }
 
 <?php elseif($page==='hizmetler'):
   $hslug=$_GET['h']??''; $svc=$hslug?front_service_find($hslug):null;
-  if($svc):
-    page_hero(['eyebrow'=>'Hizmet','title'=>$svc['title'],'desc'=>$svc['desc'],
-      'actions'=>[['label'=>'Ücretsiz Teklif Al','href'=>'/iletisim#teklif','style'=>'btn-primary'],['label'=>'WhatsApp’tan Yaz','href'=>'https://wa.me/'.$wa.'?text='.rawurlencode('Merhaba, '.$svc['title'].' hizmeti için bilgi almak istiyorum.'),'style'=>'btn-secondary','blank'=>true]],
-      'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Hizmetler','url'=>'/hizmetler'],['label'=>$svc['title']]]]);
+  if($svc): $waMsg=rawurlencode('Merhaba, '.$svc['title'].' hizmeti için bilgi almak istiyorum.');
 ?>
-<section class="section"><div class="wrap svc-detail">
-  <div class="svc-body">
+<!-- 1) SERVICE HERO -->
+<section class="page-hero service-hero">
+  <div class="wrap">
+    <span class="eyebrow">Hizmet</span>
+    <h1><?=e($svc['title'])?></h1>
     <p><?=e($svc['long'])?></p>
-    <h2>Bu hizmette neler var?</h2>
-    <ul class="svc-points"><?php foreach($svc['points'] as $pt): ?><li><?=e($pt)?></li><?php endforeach; ?></ul>
-    <h2>Diğer hizmetler</h2>
-    <div class="svc-other"><?php foreach(front_services() as $o): if(($o['slug']??'')===$svc['slug'])continue; ?><a href="/hizmetler?h=<?=e($o['slug'])?>"><?=e($o['title'])?></a><?php endforeach; ?></div>
+    <div class="page-hero-actions">
+      <a class="btn btn-primary" href="/iletisim#teklif">Ücretsiz Teklif Al</a>
+      <a class="btn btn-secondary" href="https://wa.me/<?=$wa?>?text=<?=$waMsg?>" target="_blank" rel="noopener">WhatsApp’tan Yaz</a>
+      <a class="btn btn-secondary" href="#surec">Süreci İncele</a>
+    </div>
+    <?=breadcrumb_html([['label'=>'Anasayfa','url'=>'/'],['label'=>'Hizmetler','url'=>'/hizmetler'],['label'=>$svc['title']]])?>
+    <div class="hero-cards">
+      <?php foreach(service_hero_cards() as $c): ?>
+      <article class="trust-card"><span class="tc-mark"><?=e($c['m'])?></span><h3><?=e($c['t'])?></h3><p><?=e($c['d'])?></p></article>
+      <?php endforeach; ?>
+    </div>
   </div>
-  <aside class="svc-aside">
-    <h3>Bu hizmeti mi arıyorsunuz?</h3>
-    <p>Bilgilerinizi bırakın; ihtiyacınıza uygun net bir teklifle aynı gün size dönelim.</p>
-    <a class="btn btn-primary btn-block" href="/iletisim#teklif">Ücretsiz Teklif Al</a>
-    <a class="btn btn-secondary btn-block" href="https://wa.me/<?=$wa?>?text=<?=rawurlencode('Merhaba, '.$svc['title'].' hizmeti için bilgi almak istiyorum.')?>" target="_blank" rel="noopener">WhatsApp’tan Yaz</a>
-    <a class="svc-phone" href="tel:<?=e(preg_replace('/\s+/','',$s['contact_phone']))?>"><?=e($s['contact_phone'])?></a>
-  </aside>
+</section>
+
+<!-- 2) HİZMET KAPSAMI -->
+<section class="section"><div class="wrap">
+  <div class="section-heading"><div><span class="eyebrow">Kapsam</span><h2 class="section-title">Bu hizmette neler var?</h2><p class="section-lead"><?=e($svc['desc'])?></p></div></div>
+  <div class="card-grid cols-3">
+    <?php foreach($svc['scope'] as $i=>$sc): ?>
+    <article class="service-card"><span class="card-index"><?=sprintf('%02d',$i+1)?></span><h3 class="card-title"><?=e($sc['t'])?></h3><p><?=e($sc['d'])?></p></article>
+    <?php endforeach; ?>
+  </div>
 </div></section>
-<?php final_cta_html(); ?>
+
+<!-- 3) KİMLER İÇİN UYGUN -->
+<section class="section section-alt"><div class="wrap">
+  <div class="section-heading"><div><span class="eyebrow">Kimler İçin?</span><h2 class="section-title">Bu hizmet kimler için uygun?</h2></div></div>
+  <div class="card-grid cols-3">
+    <?php foreach($svc['audience'] as $a): ?>
+    <article class="feature-card"><h3 class="card-title"><?=e($a['t'])?></h3><p><?=e($a['d'])?></p></article>
+    <?php endforeach; ?>
+  </div>
+</div></section>
+
+<!-- 4) ÇALIŞMA SÜRECİ -->
+<section class="section" id="surec"><div class="wrap">
+  <div class="section-heading center"><span class="eyebrow center">Çalışma Süreci</span><h2 class="section-title">Bu iş nasıl ilerleyecek?</h2></div>
+  <div class="process-grid">
+    <?php foreach(service_process() as $st): ?>
+    <article class="process-card"><span class="card-index"><?=e($st['no'])?></span><h3 class="card-title"><?=e($st['title'])?></h3><p><?=e($st['desc'])?></p></article>
+    <?php endforeach; ?>
+  </div>
+</div></section>
+
+<!-- 5) AVANTAJLAR / FARKLAR -->
+<section class="section section-alt"><div class="wrap">
+  <div class="section-heading center"><span class="eyebrow center">Avantajlar</span><h2 class="section-title">Neden bu hizmeti bizden almalısınız?</h2></div>
+  <div class="card-grid cols-3">
+    <?php foreach(why_us_cards() as $w): ?><article class="feature-card"><h3 class="card-title"><?=e($w['title'])?></h3><p><?=e($w['desc'])?></p></article><?php endforeach; ?>
+  </div>
+</div></section>
+
+<!-- 6) GÖRSEL / ÇALIŞMA ÖRNEĞİ -->
+<section class="section"><div class="wrap">
+  <div class="section-heading"><div><span class="eyebrow">Çalışma Örneği</span><h2 class="section-title">Teslim ettiğimiz yapı</h2><p class="section-lead">Hazırladığımız çalışmaların masaüstü, mobil ve yönetim görünümünden örnek düzenler.</p></div><a class="head-link" href="/referanslar">Referanslar →</a></div>
+  <div class="work-grid">
+    <?php foreach(service_gallery() as $g): ?>
+    <article class="work-card"><div class="work-media"><span class="work-ph"><span><?=e(first_letter($g['cat']))?></span></span></div><div class="work-body"><span class="work-cat"><?=e($g['cat'])?></span><h3><?=e($g['title'])?></h3></div></article>
+    <?php endforeach; ?>
+  </div>
+</div></section>
+
+<!-- 7) PAKET / TEKLİF SEÇENEKLERİ -->
+<section class="section section-alt"><div class="wrap">
+  <div class="section-heading center"><span class="eyebrow center">Paketler</span><h2 class="section-title">Size uygun paketi seçin</h2><p class="section-lead">İhtiyacınıza göre kapsamı birlikte belirliyor, net bir teklif çıkarıyoruz.</p></div>
+  <div class="pkg-grid">
+    <?php foreach(service_packages() as $p): ?>
+    <article class="pkg-card<?=!empty($p['featured'])?' featured':''?>"><?php if(!empty($p['featured'])): ?><span class="pkg-tag">Öne çıkan</span><?php endif; ?><h3 class="pkg-name"><?=e($p['name'])?></h3><p class="pkg-who"><?=e($p['who'])?></p><ul class="pkg-list"><?php foreach($p['features'] as $f): ?><li><?=e($f)?></li><?php endforeach; ?></ul><a class="btn <?=!empty($p['featured'])?'btn-light':'btn-primary'?> btn-block" href="https://wa.me/<?=$wa?>?text=<?=rawurlencode('Merhaba, '.$svc['title'].' - '.$p['name'].' paketi için teklif almak istiyorum.')?>" target="_blank" rel="noopener">Teklif Al</a></article>
+    <?php endforeach; ?>
+  </div>
+</div></section>
+
+<!-- 8) SSS -->
+<section class="section"><div class="wrap">
+  <div class="section-heading center"><span class="eyebrow center">SSS</span><h2 class="section-title">Sık sorulan sorular</h2></div>
+  <div class="faq">
+    <?php $sfaq=!empty($svc['faq'])?$svc['faq']:faq_items(); foreach($sfaq as $i=>$fq): $fid='svcfaq'.$i; ?>
+    <div class="faq-item<?=$i===0?' open':''?>">
+      <button type="button" class="faq-q" id="<?=$fid?>-q" aria-expanded="<?=$i===0?'true':'false'?>" aria-controls="<?=$fid?>-a"><?=e($fq['q'])?><span class="faq-ico" aria-hidden="true">+</span></button>
+      <div class="faq-a" id="<?=$fid?>-a" role="region" aria-labelledby="<?=$fid?>-q"><div class="faq-a-inner"><p><?=e($fq['a'])?></p></div></div>
+    </div>
+    <?php endforeach; ?>
+  </div>
+</div></section>
+
+<!-- 9) FİNAL CTA -->
+<?php final_cta_html(['title'=>$svc['title'].' için bugün teklif alın','desc'=>'Bilgilerinizi bırakın; ihtiyacınıza uygun net bir teklifle aynı gün size dönelim.']); ?>
 <?php else:
     page_hero(['eyebrow'=>'Hizmetler','title'=>'Web tasarım, yazılım, SEO ve dijital pazarlama','desc'=>'İşletmenizin ihtiyacına göre doğru dijital paketi kuruyor, ölçülebilir sonuçlar üretiyoruz.','actions'=>[['label'=>'Ücretsiz Teklif Al','href'=>'/iletisim#teklif']],'crumbs'=>[['label'=>'Anasayfa','url'=>'/'],['label'=>'Hizmetler']]]);
 ?>
