@@ -34,16 +34,18 @@
     document.addEventListener('click', function (e) { if (!isMobile() && !mega.contains(e.target)) mega.classList.remove('open'); });
   }
 
-  // Teklif formu → panel/api/public-lead.php
-  var form = document.getElementById('quoteForm');
-  if (form) {
-    var status = document.getElementById('quoteStatus');
+  // Teklif formları (hero + iletişim) → panel/api/public-lead.php
+  function bindLeadForm(form) {
+    var status = form.dataset.status ? document.querySelector(form.dataset.status) : form.querySelector('.form-status');
+    var btn = form.querySelector('button[type="submit"]');
+    var btnLabel = btn ? btn.textContent : 'Gönder';
+    function setStatus(msg, type) { if (status) { status.textContent = msg; status.className = 'form-status' + (type ? ' ' + type : ''); } }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var btn = form.querySelector('button[type="submit"]');
       var data = {};
       new FormData(form).forEach(function (v, k) { data[k] = v; });
-      data.kvkk = form.querySelector('[name="kvkk"]').checked;
+      var kv = form.querySelector('[name="kvkk"]');
+      data.kvkk = kv ? kv.checked : false;
       if (!data.person || !data.person.trim()) { setStatus('Lütfen ad soyad girin.', 'bad'); return; }
       if (!data.phone || !data.phone.trim()) { setStatus('Lütfen telefon numaranızı girin.', 'bad'); return; }
       if (!data.kvkk) { setStatus('Devam etmek için KVKK onayı gerekli.', 'bad'); return; }
@@ -55,15 +57,11 @@
         body: JSON.stringify(data)
       }).then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Sunucu hatası.' }; }); })
         .then(function (d) {
-          if (d && d.ok) {
-            form.reset();
-            setStatus('Talebiniz alındı. En kısa sürede sizi arayacağız. Teşekkürler!', 'ok');
-          } else {
-            setStatus((d && d.error) || 'Gönderilemedi. Lütfen WhatsApp’tan yazın.', 'bad');
-          }
+          if (d && d.ok) { form.reset(); setStatus('Talebiniz alındı. En kısa sürede sizi arayacağız. Teşekkürler!', 'ok'); }
+          else { setStatus((d && d.error) || 'Gönderilemedi. Lütfen WhatsApp’tan yazın.', 'bad'); }
         }).catch(function () { setStatus('Bağlantı hatası. Lütfen WhatsApp’tan yazın.', 'bad'); })
-        .finally(function () { if (btn) { btn.disabled = false; btn.textContent = 'Teklif İste'; } });
+        .finally(function () { if (btn) { btn.disabled = false; btn.textContent = btnLabel; } });
     });
-    function setStatus(msg, type) { if (status) { status.textContent = msg; status.className = 'form-status' + (type ? ' ' + type : ''); } }
   }
+  Array.prototype.forEach.call(document.querySelectorAll('.js-lead-form'), bindLeadForm);
 })();

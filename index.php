@@ -7,33 +7,43 @@ header_html($page);
 ?>
 <?php if($page==='home'): $posts=array_slice(posts_all(),0,3); $refs=array_values(array_filter(references_all(),fn($r)=>!empty($r['active']))); ?>
 
-<section class="hero">
+<section class="hero hero-pro">
+  <div class="hero-orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span><span class="hero-grid-lines"></span></div>
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <span class="eyebrow"><?=e($s['hero_badge'])?></span>
+      <span class="eyebrow"><span class="eb-dot"></span><?=e($s['hero_badge'])?></span>
       <h1>İşletmenizi internette <span class="hl">güven veren</span>, müşteri kazandıran web siteyle büyütün.</h1>
-      <p>Tek sayfa siteden yönetim panelli kurumsal siteye kadar; mobil uyumlu, SEO temelli ve WhatsApp’a dönüşüm taşıyan profesyonel web çözümleri kuruyoruz.</p>
+      <p>Tek sayfa siteden yönetim panelli kurumsal siteye kadar; mobil uyumlu, SEO temelli ve <b>WhatsApp’a dönüşüm</b> taşıyan profesyonel web çözümleri kuruyoruz.</p>
       <div class="hero-actions">
-        <a class="btn primary lg" href="/iletisim#teklif">Teklif Al</a>
+        <a class="btn primary lg" href="#teklif-hero">Ücretsiz Teklif Al</a>
         <a class="btn ghost lg" href="/paketler">Paketleri İncele</a>
       </div>
       <ul class="trust-badges">
         <?php foreach(trust_badges() as $b): ?><li><span class="tick">✓</span><?=e($b)?></li><?php endforeach; ?>
       </ul>
-    </div>
-    <div class="hero-visual">
-      <div class="mock-window" aria-hidden="true">
-        <div class="mock-bar"><span></span><span></span><span></span></div>
-        <div class="mock-body">
-          <div class="mock-hero"></div>
-          <div class="mock-cards"><div></div><div></div><div></div></div>
-          <div class="mock-line"></div><div class="mock-line short"></div>
-        </div>
+      <div class="hero-stats">
+        <div><b>250<span>+</span></b><span>tamamlanan proje</span></div>
+        <div><b>8<span> yıl</span></b><span>dijital tecrübe</span></div>
+        <div><b>4.9<span>/5</span></b><span>müşteri memnuniyeti</span></div>
       </div>
-      <div class="float-chip chip-1"><b>4.999 TL</b><span>başlangıç sitesi</span></div>
-      <div class="float-chip chip-2"><b>WhatsApp</b><span>dönüşüm odaklı</span></div>
-      <div class="float-chip chip-3"><b>SEO</b><span>temel kurulum</span></div>
     </div>
+    <aside class="hero-form-card" id="teklif-hero">
+      <div class="hff-head"><span class="hff-badge">Ücretsiz</span><h2>Hemen Teklif Alın</h2><p>Bilgilerinizi bırakın, aynı gün size dönelim.</p></div>
+      <form class="hero-form js-lead-form" data-status="#heroStatus" novalidate>
+        <div class="hp" aria-hidden="true"><input type="text" name="company_site" tabindex="-1" autocomplete="off"></div>
+        <input name="person" required placeholder="Ad Soyad *">
+        <input name="phone" required placeholder="Telefon *" inputmode="tel">
+        <input name="company" placeholder="Firma adı (opsiyonel)">
+        <select name="service">
+          <option value="">İstediğiniz hizmet</option>
+          <?php foreach(['Tek sayfa web sitesi','Randevulu web sitesi','Çok sayfalı kurumsal site','Yönetim panelli site','E-ticaret','SEO','Reklam / sosyal medya'] as $o): ?><option><?=e($o)?></option><?php endforeach; ?>
+        </select>
+        <label class="kvkk-line"><input type="checkbox" name="kvkk" value="1" required> <a href="/kvkk" target="_blank">KVKK metni</a>ni okudum, iletişim onaylıyorum.</label>
+        <button class="btn primary full lg" type="submit">Teklif İste →</button>
+        <p class="form-status" id="heroStatus" role="status" aria-live="polite"></p>
+      </form>
+      <div class="hff-foot"><a href="tel:<?=e(preg_replace('/\s+/','',$s['contact_phone']))?>">📞 <?=e($s['contact_phone'])?></a><a href="https://wa.me/<?=normalize_whatsapp($s['contact_whatsapp'])?>" target="_blank" rel="noopener">WhatsApp</a></div>
+    </aside>
   </div>
 </section>
 
@@ -176,7 +186,7 @@ header_html($page);
   <div class="quote-card" id="teklif">
     <h2>Teklif Formu</h2>
     <p class="quote-sub">Bilgilerinizi bırakın, en kısa sürede dönüş yapalım. Zorunlu alanlar <span>*</span></p>
-    <form id="quoteForm" class="quote-form" novalidate>
+    <form id="quoteForm" class="quote-form js-lead-form" data-status="#quoteStatus" novalidate>
       <div class="hp" aria-hidden="true"><label>Firma web sitesi<input type="text" name="company_site" tabindex="-1" autocomplete="off"></label></div>
       <div class="fg"><label>Ad Soyad *</label><input name="person" required placeholder="Adınız Soyadınız"></div>
       <div class="fg"><label>Firma Adı</label><input name="company" placeholder="İşletme / firma adı"></div>
