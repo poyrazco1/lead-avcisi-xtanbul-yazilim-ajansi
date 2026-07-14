@@ -452,12 +452,14 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
 
 /* ============================================================
    Sinematik Hero (ana sayfa) — tam ekran video + liquid-glass
+   Spec: --background 201 100% 13% · --foreground 0 0% 100%
+         --muted-foreground 240 4% 66% · Instrument Serif + Inter
    Yalnızca .cinematic-hero ve ana sayfa (body.page-home) başlığı
    ============================================================ */
 .cinematic-hero{
   --c-bg:hsl(201 100% 13%);
   --c-fg:hsl(0 0% 100%);
-  --c-muted:hsl(240 4% 80%);
+  --c-muted:hsl(240 4% 66%);
   --c-display:"Instrument Serif",Georgia,"Times New Roman",serif;
   --c-body:"Inter","Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   position:relative;
@@ -482,6 +484,7 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
   object-fit:cover;
   pointer-events:none;
 }
+/* Hero içerik: dikey ortalı, px-6 pt-32 pb-40 (max-w-7xl) */
 .cinematic-hero .hero-content{
   position:relative;
   z-index:10;
@@ -489,75 +492,68 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  width:min(100% - 48px,1180px);
+  width:min(100% - 48px,1280px);
   margin-inline:auto;
-  padding:120px 0 120px;
+  padding:128px 0 160px;
   text-align:center;
 }
+/* H1: text-5xl → md:text-8xl, leading-[0.95], tracking-[-2.46px] */
 .cinematic-hero .hero-title{
-  max-width:1040px;
+  max-width:1280px;
   margin:0;
   color:var(--c-fg);
   font-family:var(--c-display);
   font-weight:400;
-  font-size:clamp(2.05rem,5.8vw,5.1rem);
-  line-height:1.02;
-  letter-spacing:-.02em;
+  font-size:clamp(2.1rem,6vw,5.25rem);
+  line-height:.98;
+  letter-spacing:-.03em;
   text-wrap:balance;
   word-break:normal;
   overflow-wrap:break-word;
 }
+/* em: not-italic + muted-foreground (renk kontrastı) */
 .cinematic-hero .hero-title em{
-  color:hsl(240 5% 65%);
+  color:var(--c-muted);
   font-style:normal;
 }
+/* Alt metin: text-base/lg, max-w-2xl, mt-8, leading-relaxed */
 .cinematic-hero .hero-description{
-  max-width:640px;
-  margin:30px auto 0;
+  max-width:672px;
+  margin:32px auto 0;
   color:var(--c-muted);
   font-family:var(--c-body);
   font-size:clamp(1rem,1.4vw,1.125rem);
   font-weight:400;
-  line-height:1.7;
+  line-height:1.625;
   text-wrap:balance;
 }
 .cinematic-hero .hero-description b{color:var(--c-fg);font-weight:500}
 .cinematic-hero .hero-cta-row{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:18px;
   align-items:center;
   justify-content:center;
-  margin-top:52px;
+  margin-top:48px;
 }
+/* Ana CTA: liquid-glass rounded-full px-14 py-5 text-base mt-12 */
 .cinematic-hero .hero-cta{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-width:264px;
-  min-height:70px;
-  padding:20px 60px;
+  min-height:60px;
+  padding:20px 56px;
   border-radius:999px;
   color:var(--c-fg);
   font-family:var(--c-body);
-  font-size:1.06rem;
-  font-weight:500;
+  font-size:1rem;
+  font-weight:400;
   letter-spacing:.01em;
   text-decoration:none;
   cursor:pointer;
-  transition:transform .2s ease,background-color .2s ease,box-shadow .2s ease;
+  transition:transform .2s ease;
 }
-.cinematic-hero .hero-cta.liquid-glass{
-  background:rgba(255,255,255,.1);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.22),0 12px 42px rgba(0,0,0,.30);
-}
-.cinematic-hero .hero-cta.liquid-glass:hover{
-  transform:scale(1.03);
-  background:rgba(255,255,255,.17);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.32),0 16px 48px rgba(0,0,0,.36);
-}
+.cinematic-hero .hero-cta:hover{transform:scale(1.03)}
 .cinematic-hero .hero-cta:focus-visible{outline:2px solid var(--c-fg);outline-offset:5px}
 .cinematic-hero .hero-cta-secondary{
   display:inline-flex;
@@ -565,26 +561,26 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
   gap:6px;
   color:var(--c-fg);
   font-family:var(--c-body);
-  font-size:.92rem;
+  font-size:.9rem;
   font-weight:400;
   letter-spacing:.02em;
   text-decoration:none;
-  opacity:.72;
+  opacity:.66;
   transition:opacity .2s ease,transform .2s ease;
 }
 .cinematic-hero .hero-cta-secondary:hover{opacity:1;transform:translateY(1px)}
 .cinematic-hero .hero-cta-secondary:focus-visible{outline:2px solid var(--c-fg);outline-offset:4px;border-radius:8px}
 
-/* Liquid glass */
+/* Liquid glass — spec ile birebir */
 .liquid-glass{
   position:relative;
   overflow:hidden;
   border:0;
-  background:rgba(255,255,255,.06);
+  background:rgba(255,255,255,.01);
   background-blend-mode:luminosity;
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.10);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.1);
 }
 .liquid-glass::before{
   content:"";
@@ -604,6 +600,7 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
   mask-composite:exclude;
   pointer-events:none;
 }
+/* backdrop-filter desteklenmezse okunur zemin */
 @supports not ((backdrop-filter:blur(4px)) or (-webkit-backdrop-filter:blur(4px))){
   .liquid-glass{background:rgba(10,20,25,.72)}
 }
@@ -614,76 +611,96 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
 .animate-fade-rise-delay{animation:fade-rise .8s ease-out .2s both}
 .animate-fade-rise-delay-2{animation:fade-rise .8s ease-out .4s both}
 
-/* ---- Ana sayfa: video üzerinde yüzen liquid-glass KAPSÜL navigasyon ---- */
+/* ---- Ana sayfa: video üzerinde SADE ŞEFFAF, ortalanmış navigasyon ----
+   Spec: nav relative z-10, max-w-7xl mx-auto, px-8 py-6 — kapsül/çerçeve YOK.
+   Cam yalnızca CTA butonundadır. Nav'ın kendisi tamamen şeffaftır. */
 body.page-home{background:hsl(201 100% 13%)}
-/* ÖNEMLİ: transform/backdrop-filter mobilde .main-nav position:fixed'i kapsüle
-   hapseder (containing block). Bu yüzden bulanıklık YALNIZCA masaüstünde (>=901px)
-   verilir; mobilde daha opak yarı saydam zemin kullanılır ki mobil menü tam ekran açılsın. */
+/* ÖNEMLİ: .site-header/.header-inner'a backdrop-filter VERME — mobilde
+   .main-nav position:fixed'i containing-block'a hapseder. Şeffaf kalsın. */
 body.page-home .site-header{
   position:fixed;
-  top:18px;
-  left:0;right:0;
-  width:min(100% - 40px,1200px);
-  margin-inline:auto;
-  border-radius:999px;
-  background:rgba(18,24,30,.44);
+  top:0;left:0;right:0;
+  width:100%;
+  background:transparent;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
-  border:1px solid rgba(255,255,255,.16);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.06),0 12px 44px rgba(0,0,0,.30);
-  transition:background .25s ease,box-shadow .25s ease,border-color .25s ease;
+  border:0;
+  box-shadow:none;
+  transition:background .25s ease,box-shadow .25s ease;
 }
-body.page-home .header-inner{padding:10px 14px 10px 26px}
-body.page-home .site-header .brand-name{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.32)}
+body.page-home .header-inner{max-width:1280px;padding:24px 32px}
+body.page-home .site-header .brand-name{color:#fff;text-shadow:0 1px 16px rgba(0,0,0,.35)}
 body.page-home .site-header .brand-name em{color:#fff;opacity:.72}
-body.page-home .site-header .hamburger{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28)}
+body.page-home .site-header .hamburger{background:rgba(255,255,255,.01);border-color:rgba(255,255,255,.28)}
 body.page-home .site-header .hamburger span{background:#fff}
-/* Yüzen kapsülün altına açılan mega panelin köşeleri */
-body.page-home .mega-panel{border-radius:0 0 22px 22px;overflow:hidden}
-/* Kaydırma sonrası: açık cam kapsül (alttaki açık bölümler için okunur) */
+
+/* Kaydırma sonrası: alttaki açık bölümler için katı açık başlık (spec'te yok,
+   tek ekran hero olduğundan; pratik okunabilirlik için eklendi) */
 body.page-home .site-header.scrolled{
   background:rgba(255,255,255,.94);
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-  border-color:rgba(20,35,90,.10);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 12px 34px rgba(20,35,90,.16);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 6px 24px rgba(20,35,90,.08);
 }
 body.page-home .site-header.scrolled .brand-name{color:var(--ink);text-shadow:none}
 body.page-home .site-header.scrolled .brand-name em{color:var(--brand);opacity:1}
 body.page-home .site-header.scrolled .hamburger{background:var(--surface);border-color:var(--line-2)}
 body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
 
-/* Masaüstü: kapsül içi menü bağlantıları ve cam CTA + gerçek buzlu cam (blur) */
+/* Masaüstü: menü bağlantıları (text-sm, muted-foreground) ve liquid-glass CTA */
 @media (min-width:901px){
-  body.page-home .site-header{
-    background:rgba(18,24,30,.24);
-    -webkit-backdrop-filter:blur(16px) saturate(150%);
-    backdrop-filter:blur(16px) saturate(150%);
-  }
   body.page-home .site-header.scrolled{
-    background:rgba(255,255,255,.82);
-    -webkit-backdrop-filter:blur(16px) saturate(180%);
-    backdrop-filter:blur(16px) saturate(180%);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);
+    backdrop-filter:saturate(180%) blur(14px);
   }
-  body.page-home .site-header .nav-link{color:rgba(255,255,255,.82);text-shadow:0 1px 10px rgba(0,0,0,.24)}
+  body.page-home .site-header .nav-link{
+    font-size:.875rem;font-weight:400;
+    color:hsl(240 4% 74%);
+    text-shadow:0 1px 10px rgba(0,0,0,.28);
+    background:transparent;
+  }
   body.page-home .site-header .nav-link:hover,
-  body.page-home .site-header .nav-link.active{color:#fff;background:rgba(255,255,255,.14)}
-  body.page-home .site-header .phone-link span{color:rgba(255,255,255,.6)}
-  body.page-home .site-header .phone-link b{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.24)}
+  body.page-home .site-header .nav-link.active{color:#fff;background:transparent}
+  body.page-home .site-header .phone-link span{color:hsl(240 4% 68%)}
+  body.page-home .site-header .phone-link b{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.28)}
+  /* CTA = liquid-glass rounded-full px-6 py-2.5 text-sm */
   body.page-home .site-header .header-cta>.btn.primary{
-    padding:11px 26px;
+    position:relative;
+    overflow:hidden;
+    padding:10px 24px;
     border-radius:999px;
-    background:rgba(255,255,255,.08);
-    -webkit-backdrop-filter:blur(6px);
-    backdrop-filter:blur(6px);
+    border:0;
+    background:rgba(255,255,255,.01);
+    background-blend-mode:luminosity;
+    -webkit-backdrop-filter:blur(4px);
+    backdrop-filter:blur(4px);
     color:#fff;
-    border:1px solid rgba(255,255,255,.30);
-    box-shadow:inset 0 1px 1px rgba(255,255,255,.34),inset 0 -1px 1px rgba(255,255,255,.08);
+    font-family:"Inter","Manrope",sans-serif;
+    font-size:.875rem;
+    font-weight:400;
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.1);
+  }
+  body.page-home .site-header .header-cta>.btn.primary::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    padding:1.4px;
+    background:linear-gradient(180deg,
+      rgba(255,255,255,.45) 0%,
+      rgba(255,255,255,.15) 20%,
+      rgba(255,255,255,0) 40%,
+      rgba(255,255,255,0) 60%,
+      rgba(255,255,255,.15) 80%,
+      rgba(255,255,255,.45) 100%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    pointer-events:none;
   }
   body.page-home .site-header .header-cta>.btn.primary:hover{
-    transform:translateY(-1px);
-    background:rgba(255,255,255,.17);
-    border-color:rgba(255,255,255,.46);
+    transform:scale(1.03);
+    background:rgba(255,255,255,.06);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.16);
   }
   /* Kaydırma sonrası masaüstü: marka renklerine dön */
   body.page-home .site-header.scrolled .nav-link{color:var(--ink-soft);text-shadow:none}
@@ -694,10 +711,10 @@ body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
   body.page-home .site-header.scrolled .header-cta>.btn.primary{
     background:linear-gradient(135deg,var(--brand),var(--brand-2));
     color:#fff;
-    border-color:transparent;
     -webkit-backdrop-filter:none;backdrop-filter:none;
     box-shadow:0 8px 22px rgba(39,67,214,.28);
   }
+  body.page-home .site-header.scrolled .header-cta>.btn.primary::before{display:none}
 }
 
 /* ---- Hero altı: teklif + güven bandı (mevcut form/istatistik korunur) ---- */
@@ -707,19 +724,15 @@ body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
 
 /* ---- Sinematik hero — responsive ---- */
 @media (max-width:767px){
-  .cinematic-hero .hero-content{width:min(100% - 32px,1180px);padding:112px 0 88px}
+  .cinematic-hero .hero-content{width:min(100% - 32px,1280px);padding:120px 0 96px}
   .cinematic-hero .hero-description{margin-top:24px}
   .cinematic-hero .hero-cta-row{gap:16px;width:100%;margin-top:40px}
-  .cinematic-hero .hero-cta{width:100%;min-width:0;min-height:62px;padding:18px 28px}
+  .cinematic-hero .hero-cta{width:100%;min-height:60px;padding:18px 28px}
   .cinematic-hero .hero-cta-secondary{justify-content:center;padding:6px 16px}
-}
-/* Mobil: kapsül navigasyonu biraz daralt */
-@media (max-width:767px){
-  body.page-home .site-header{top:12px;width:min(100% - 24px,1200px)}
-  body.page-home .header-inner{padding:8px 10px 8px 18px}
+  body.page-home .header-inner{padding:18px 20px}
 }
 @media (max-width:380px){
-  .cinematic-hero .hero-title{font-size:clamp(1.75rem,8.4vw,2.2rem);letter-spacing:-.01em}
+  .cinematic-hero .hero-title{font-size:clamp(1.75rem,8.4vw,2.2rem);letter-spacing:-.02em}
 }
 
 /* Hareket azaltma tercihini destekle */
