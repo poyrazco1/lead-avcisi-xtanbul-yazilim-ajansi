@@ -457,9 +457,9 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
    Yalnızca .cinematic-hero ve ana sayfa (body.page-home) başlığı
    ============================================================ */
 .cinematic-hero{
-  --c-bg:hsl(201 100% 13%);
+  --c-bg:#000;
   --c-fg:hsl(0 0% 100%);
-  --c-muted:hsl(240 4% 66%);
+  --c-muted:hsl(0 0% 65%);
   --c-display:"Instrument Serif",Georgia,"Times New Roman",serif;
   --c-body:"Inter","Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   position:relative;
@@ -614,7 +614,7 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
 /* ---- Ana sayfa: video üzerinde SADE ŞEFFAF, ortalanmış navigasyon ----
    Spec: nav relative z-10, max-w-7xl mx-auto, px-8 py-6 — kapsül/çerçeve YOK.
    Cam yalnızca CTA butonundadır. Nav'ın kendisi tamamen şeffaftır. */
-body.page-home{background:hsl(201 100% 13%)}
+body.page-home{background:#000}
 /* ÖNEMLİ: .site-header/.header-inner'a backdrop-filter VERME — mobilde
    .main-nav position:fixed'i containing-block'a hapseder. Şeffaf kalsın. */
 body.page-home .site-header{
@@ -637,9 +637,9 @@ body.page-home .site-header .hamburger span{background:#fff}
 /* Kaydırma sonrası: alttaki açık bölümler için katı açık başlık (spec'te yok,
    tek ekran hero olduğundan; pratik okunabilirlik için eklendi) */
 body.page-home .site-header.scrolled{
-  background:rgba(255,255,255,.94);
+  background:rgba(0,0,0,.72);
   border-bottom:1px solid var(--line);
-  box-shadow:0 6px 24px rgba(20,35,90,.08);
+  box-shadow:0 6px 24px rgba(0,0,0,.55);
 }
 body.page-home .site-header.scrolled .brand-name{color:var(--ink);text-shadow:none}
 body.page-home .site-header.scrolled .brand-name em{color:var(--brand);opacity:1}
@@ -709,10 +709,10 @@ body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
   body.page-home .site-header.scrolled .phone-link span{color:var(--muted)}
   body.page-home .site-header.scrolled .phone-link b{color:var(--ink);text-shadow:none}
   body.page-home .site-header.scrolled .header-cta>.btn.primary{
-    background:linear-gradient(135deg,var(--brand),var(--brand-2));
-    color:#fff;
+    background:#fff;
+    color:#000;
     -webkit-backdrop-filter:none;backdrop-filter:none;
-    box-shadow:0 8px 22px rgba(39,67,214,.28);
+    box-shadow:0 8px 22px rgba(255,255,255,.14);
   }
   body.page-home .site-header.scrolled .header-cta>.btn.primary::before{display:none}
 }
@@ -751,7 +751,7 @@ body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
    Cam kartlar okunur olsun diye kartları içeren bölüm koyu zemine alınır.
    .why-card / .step-card / diğer kartlar etkilenmez.
    ============================================================ */
-.feature-section{background:hsl(201 100% 13%);color:#fff}
+.feature-section{background:#000;color:#fff}
 .feature-section .section-head h2{color:#fff}
 .feature-section .section-head>p{color:rgba(255,255,255,.72)}
 .feature-section .eyebrow{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14)}
@@ -884,4 +884,151 @@ body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
   .liquid-glass-card .feature-tags{max-width:75%}
   .liquid-glass-card .feature-tag{padding:4px 8px;font-size:10px}
   .liquid-glass-card .feature-card-content h3{font-size:2rem}
+}
+
+/* ============================================================
+   KOYU MONOKROM TEMA — tüm herkese açık sayfalar (body.site-front)
+   Admin (.adm-body / admin.php) bu kapsam DIŞINDA, aynen açık kalır.
+   Yöntem: tasarım token'larını koyu monokroma yeniden eşle → mevcut
+   bileşenler otomatik koyulaşır; ardından sabit renkler yamalanır.
+   ============================================================ */
+body.site-front{
+  --bg:#000;
+  --surface:#0d0d0d;
+  --surface-2:#161616;
+  --surface-3:#1f1f1f;
+  --ink:#ffffff;
+  --ink-soft:#d9d9d9;
+  --muted:#a6a6a6;
+  --line:#333333;
+  --line-2:#404040;
+  --brand:#ffffff;
+  --brand-2:#e5e5e5;
+  --brand-ink:#ffffff;
+  --brand-soft:rgba(255,255,255,.08);
+  --accent:#ffffff;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.4);
+  --shadow:0 14px 34px rgba(0,0,0,.5);
+  --shadow-lg:0 26px 60px rgba(0,0,0,.6);
+  --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --display:'Inter',ui-sans-serif,system-ui,system-ui,sans-serif;
+  background:#000;
+  color:#fff;
+}
+body.site-front ::selection{background:#fff;color:#000}
+/* Başlık içi <em> = Instrument Serif italik vurgu (tasarım dili) */
+body.site-front h1 em,body.site-front h2 em,body.site-front h3 em{
+  font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-weight:400;color:var(--muted);
+}
+
+/* --- Butonlar (monokrom) --- */
+body.site-front .btn.primary{background:#fff;color:#000;box-shadow:none}
+body.site-front .btn.primary:hover{box-shadow:0 10px 26px rgba(255,255,255,.14)}
+body.site-front .btn.ghost{background:rgba(255,255,255,.03);color:#fff;border-color:var(--line-2);box-shadow:none}
+body.site-front .btn.ghost:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+body.site-front .btn.light{background:#fff;color:#000}
+body.site-front .btn.outline-light{color:#fff;border-color:rgba(255,255,255,.5)}
+body.site-front .btn.outline-light:hover{background:rgba(255,255,255,.12)}
+
+/* --- Başlık/nav: ana sayfa DIŞINDAKİ sayfalarda koyu cam başlık --- */
+body.site-front:not(.page-home) .site-header{
+  background:rgba(0,0,0,.55);
+  -webkit-backdrop-filter:saturate(140%) blur(14px);
+  backdrop-filter:saturate(140%) blur(14px);
+  border-bottom:1px solid var(--line);
+}
+body.site-front:not(.page-home) .site-header.scrolled{box-shadow:0 6px 24px rgba(0,0,0,.55)}
+body.site-front:not(.page-home) .brand-name{color:#fff}
+body.site-front:not(.page-home) .brand-name em{color:#fff;font-family:inherit;font-style:normal}
+body.site-front:not(.page-home) .nav-link{color:var(--muted)}
+body.site-front:not(.page-home) .nav-link:hover,
+body.site-front:not(.page-home) .nav-link.active{color:#fff;background:rgba(255,255,255,.08)}
+body.site-front:not(.page-home) .phone-link span{color:var(--muted)}
+body.site-front:not(.page-home) .phone-link b{color:#fff}
+body.site-front:not(.page-home) .hamburger{background:rgba(255,255,255,.03);border-color:var(--line-2)}
+body.site-front:not(.page-home) .hamburger span{background:#fff}
+/* Mega panel koyu */
+body.site-front .mega-panel{background:var(--surface);border-color:var(--line)}
+body.site-front .mega-cta{background:rgba(255,255,255,.03);border-color:var(--line)}
+body.site-front .nav-mobile-cta .btn.primary{background:#fff;color:#000}
+@media (max-width:900px){
+  body.site-front .main-nav{background:#0a0a0a}
+}
+
+/* --- Eyebrow / rozet / section --- */
+body.site-front .eyebrow{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--line)}
+body.site-front .hero-copy .eyebrow{background:rgba(255,255,255,.06)}
+body.site-front .eb-dot{background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.14)}
+body.site-front .head-link{color:#fff}
+
+/* --- Kartlar: sabit renk yamaları (çoğu değişken üzerinden koyulaşır) --- */
+body.site-front .pkg-card.featured{
+  background:rgba(255,255,255,.04);
+  border-color:rgba(255,255,255,.4);
+  box-shadow:0 18px 44px rgba(0,0,0,.5);
+}
+body.site-front .pkg-tag{background:#fff;color:#000}
+body.site-front .pkg-list li::before{color:#fff}
+body.site-front .ref-logo{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
+body.site-front .ref-cat{background:rgba(255,255,255,.06);color:#fff}
+body.site-front .trust-badges .tick{background:#fff;color:#000}
+body.site-front .step-no{color:#fff;opacity:.3}
+
+/* --- CTA band (mavi gradyan yerine koyu cam) --- */
+body.site-front .cta-band{
+  background:#0a0a0a;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+body.site-front .cta-band h2{color:#fff}
+body.site-front .cta-band p{color:var(--muted)}
+
+/* --- Page hero (iç sayfa başlıkları) --- */
+body.site-front .page-hero{
+  background:#000;
+  border-bottom:1px solid var(--line);
+}
+body.site-front .page-hero h1{color:#fff}
+body.site-front .page-hero p{color:var(--ink-soft)}
+
+/* --- Hero lead-band + form kartı (ana sayfa) koyu --- */
+body.site-front .lead-band{background:#000}
+body.site-front .lead-band .hero-copy>p{color:var(--ink-soft)}
+body.site-front .hero-form-card{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-lg)}
+body.site-front .hff-badge{background:rgba(255,255,255,.1);color:#fff}
+body.site-front .hff-foot a{background:rgba(255,255,255,.04);color:#fff}
+body.site-front .hff-foot a:hover{background:rgba(255,255,255,.09)}
+
+/* --- Formlar: odak durumunda beyaz zemin yerine koyu --- */
+body.site-front .hero-form input,body.site-front .hero-form select,
+body.site-front .quote-form input,body.site-front .quote-form select,body.site-front .quote-form textarea{
+  background:var(--surface-2);border-color:var(--line-2);color:#fff;
+}
+body.site-front .hero-form input::placeholder,body.site-front .quote-form input::placeholder,
+body.site-front .quote-form textarea::placeholder{color:#8a8a8a}
+body.site-front .hero-form input:focus,body.site-front .hero-form select:focus,
+body.site-front .quote-form input:focus,body.site-front .quote-form select:focus,body.site-front .quote-form textarea:focus{
+  border-color:#fff;background:var(--surface-3);box-shadow:0 0 0 3px rgba(255,255,255,.12);
+}
+body.site-front .kvkk-line input{accent-color:#fff}
+body.site-front .kvkk-line a,body.site-front .contact-info a{color:#fff;text-decoration:underline;text-underline-offset:2px}
+body.site-front .form-status.ok{color:#8ef0b0}
+body.site-front .form-status.bad{color:#ff8f8f}
+body.site-front .contact-info .btn.primary{color:#000}
+
+/* --- Footer: saf siyah, nötr gri metin --- */
+body.site-front .site-footer{background:#050505;border-top:1px solid var(--line);color:var(--muted)}
+body.site-front .footer-brand .brand-name{color:#fff}
+body.site-front .footer-brand .brand-name em{color:#d9d9d9}
+body.site-front .footer-brand p{color:var(--muted)}
+body.site-front .footer-social a{color:var(--ink-soft);border-color:var(--line-2)}
+body.site-front .footer-social a:hover{background:#fff;border-color:#fff;color:#000}
+body.site-front .footer-col h4{color:#fff}
+body.site-front .footer-col a,body.site-front .footer-col small{color:var(--muted)}
+body.site-front .footer-col a:hover,body.site-front .footer-legal a:hover{color:#fff}
+body.site-front .footer-bottom{color:var(--muted);border-top:1px solid var(--line)}
+
+/* --- Scroll reveal (fadeUp) başlangıç durumu — yalnızca JS açıksa uygulanır --- */
+@media (prefers-reduced-motion:reduce){
+  body.site-front [style*="opacity: 0"]{opacity:1 !important;transform:none !important}
 }

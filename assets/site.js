@@ -65,3 +65,43 @@
   }
   Array.prototype.forEach.call(document.querySelectorAll('.js-lead-form'), bindLeadForm);
 })();
+
+/* Scroll reveal — framer-motion fadeUp benzeri, vanilla IntersectionObserver.
+   Güvenli: JS yoksa içerik görünür kalır; ekranda olan (üstteki) öğelere dokunmaz;
+   prefers-reduced-motion'da devre dışı. Yalnızca ön yüzde (body.site-front). */
+(function () {
+  'use strict';
+  if (!document.body || document.body.className.indexOf('site-front') === -1) return;
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var selector = '.section-head, .feature-card, .why-card, .step-card, .pkg-card, .ref-card, .post-card, .stat-cards article, .hero-form-card, .article, .cta-inner, .split-2 > *';
+  var els = Array.prototype.slice.call(document.querySelectorAll(selector));
+  if (!els.length) return;
+
+  var vh = window.innerHeight || document.documentElement.clientHeight;
+  var toWatch = [];
+  els.forEach(function (el, i) {
+    var top = el.getBoundingClientRect().top;
+    if (top < vh * 0.92) return; // zaten görünürse gizleme (FOUC yok)
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity .6s ease, transform .6s ease';
+    el.style.transitionDelay = ((i % 3) * 0.08) + 's';
+    el.style.willChange = 'opacity, transform';
+    toWatch.push(el);
+  });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      io.unobserve(el);
+      setTimeout(function () { el.style.willChange = 'auto'; }, 700);
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -70px 0px' });
+
+  toWatch.forEach(function (el) { io.observe(el); });
+})();
