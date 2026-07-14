@@ -449,3 +449,249 @@ body.adm-open .adm-overlay{opacity:1;visibility:visible}
   .adm-stats,.adm-quick-grid{grid-template-columns:1fr}
   .adm-topbar h1{font-size:18px}
 }
+
+/* ============================================================
+   Sinematik Hero (ana sayfa) — tam ekran video + liquid-glass
+   Yalnızca .cinematic-hero ve ana sayfa (body.page-home) başlığı
+   ============================================================ */
+.cinematic-hero{
+  --c-bg:hsl(201 100% 13%);
+  --c-fg:hsl(0 0% 100%);
+  --c-muted:hsl(240 4% 80%);
+  --c-display:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --c-body:"Inter","Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:100vh;
+  min-height:100svh;
+  overflow:hidden;
+  background:var(--c-bg);
+  color:var(--c-fg);
+}
+.hero-video{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  pointer-events:none;
+}
+.cinematic-hero .hero-content{
+  position:relative;
+  z-index:10;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:min(100% - 48px,1180px);
+  margin-inline:auto;
+  padding:120px 0 120px;
+  text-align:center;
+}
+.cinematic-hero .hero-title{
+  max-width:900px;
+  margin:0;
+  color:var(--c-fg);
+  font-family:var(--c-display);
+  font-weight:400;
+  font-size:clamp(1.95rem,5.2vw,4.6rem);
+  line-height:1.04;
+  letter-spacing:-.02em;
+  text-wrap:balance;
+  word-break:normal;
+  overflow-wrap:break-word;
+}
+.cinematic-hero .hero-title em{
+  color:var(--c-muted);
+  font-style:italic;
+}
+.cinematic-hero .hero-description{
+  max-width:640px;
+  margin:30px auto 0;
+  color:var(--c-muted);
+  font-family:var(--c-body);
+  font-size:clamp(1rem,1.4vw,1.125rem);
+  font-weight:400;
+  line-height:1.7;
+  text-wrap:balance;
+}
+.cinematic-hero .hero-description b{color:var(--c-fg);font-weight:500}
+.cinematic-hero .hero-cta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:18px;
+  align-items:center;
+  justify-content:center;
+  margin-top:46px;
+}
+.cinematic-hero .hero-cta{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:210px;
+  min-height:58px;
+  padding:16px 48px;
+  border-radius:999px;
+  color:var(--c-fg);
+  font-family:var(--c-body);
+  font-size:1rem;
+  font-weight:500;
+  letter-spacing:.01em;
+  text-decoration:none;
+  cursor:pointer;
+  transition:transform .2s ease,background-color .2s ease;
+}
+.cinematic-hero .hero-cta:hover{transform:scale(1.03)}
+.cinematic-hero .hero-cta:focus-visible{outline:2px solid var(--c-fg);outline-offset:5px}
+.cinematic-hero .hero-cta-secondary{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:58px;
+  padding:16px 22px;
+  color:var(--c-fg);
+  font-family:var(--c-body);
+  font-size:.95rem;
+  font-weight:400;
+  text-decoration:none;
+  opacity:.82;
+  transition:opacity .2s ease,transform .2s ease;
+}
+.cinematic-hero .hero-cta-secondary:hover{opacity:1;transform:translateX(2px)}
+.cinematic-hero .hero-cta-secondary:focus-visible{outline:2px solid var(--c-fg);outline-offset:4px;border-radius:8px}
+
+/* Liquid glass */
+.liquid-glass{
+  position:relative;
+  overflow:hidden;
+  border:0;
+  background:rgba(255,255,255,.06);
+  background-blend-mode:luminosity;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.10);
+}
+.liquid-glass::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  padding:1.4px;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.45) 0%,
+    rgba(255,255,255,.15) 20%,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,.15) 80%,
+    rgba(255,255,255,.45) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
+@supports not ((backdrop-filter:blur(4px)) or (-webkit-backdrop-filter:blur(4px))){
+  .liquid-glass{background:rgba(10,20,25,.72)}
+}
+
+/* Yukarı doğru yumuşak giriş animasyonları */
+@keyframes fade-rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.animate-fade-rise{animation:fade-rise .8s ease-out both}
+.animate-fade-rise-delay{animation:fade-rise .8s ease-out .2s both}
+.animate-fade-rise-delay-2{animation:fade-rise .8s ease-out .4s both}
+
+/* ---- Ana sayfa: video üzerinde şeffaf liquid-glass navigasyon ---- */
+body.page-home{background:hsl(201 100% 13%)}
+body.page-home .site-header{
+  position:fixed;
+  left:0;right:0;top:0;
+  background:transparent;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  box-shadow:none;
+}
+body.page-home .site-header .brand-name{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.28)}
+body.page-home .site-header .brand-name em{color:#fff;opacity:.72}
+body.page-home .site-header .hamburger{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.24)}
+body.page-home .site-header .hamburger span{background:#fff}
+/* Kaydırma sonrası: katı açık başlık (alttaki açık bölümler için) */
+body.page-home .site-header.scrolled{
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:saturate(180%) blur(14px);
+  backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 6px 24px rgba(20,35,90,.08);
+}
+body.page-home .site-header.scrolled .brand-name{color:var(--ink);text-shadow:none}
+body.page-home .site-header.scrolled .brand-name em{color:var(--brand);opacity:1}
+body.page-home .site-header.scrolled .hamburger{background:var(--surface);border-color:var(--line-2)}
+body.page-home .site-header.scrolled .hamburger span{background:var(--ink)}
+
+/* Masaüstü: menü bağlantıları ve CTA video üzerinde açık renk / cam efekti */
+@media (min-width:901px){
+  body.page-home .site-header .nav-link{color:rgba(255,255,255,.86);text-shadow:0 1px 10px rgba(0,0,0,.22)}
+  body.page-home .site-header .nav-link:hover,
+  body.page-home .site-header .nav-link.active{color:#fff;background:rgba(255,255,255,.14)}
+  body.page-home .site-header .phone-link span{color:rgba(255,255,255,.64)}
+  body.page-home .site-header .phone-link b{color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.22)}
+  body.page-home .site-header .header-cta>.btn.primary{
+    background:rgba(255,255,255,.08);
+    background-blend-mode:luminosity;
+    -webkit-backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px);
+    color:#fff;
+    border-color:transparent;
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.20),0 0 0 1px rgba(255,255,255,.20);
+  }
+  body.page-home .site-header .header-cta>.btn.primary:hover{
+    transform:translateY(-2px);
+    background:rgba(255,255,255,.16);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.30),0 0 0 1px rgba(255,255,255,.30);
+  }
+  /* Kaydırma sonrası masaüstü: varsayılan koyu/marka renklerine dön */
+  body.page-home .site-header.scrolled .nav-link{color:var(--ink-soft);text-shadow:none}
+  body.page-home .site-header.scrolled .nav-link:hover,
+  body.page-home .site-header.scrolled .nav-link.active{color:var(--brand);background:var(--brand-soft)}
+  body.page-home .site-header.scrolled .phone-link span{color:var(--muted)}
+  body.page-home .site-header.scrolled .phone-link b{color:var(--ink);text-shadow:none}
+  body.page-home .site-header.scrolled .header-cta>.btn.primary{
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff;
+    -webkit-backdrop-filter:none;backdrop-filter:none;
+    box-shadow:0 8px 22px rgba(39,67,214,.28);
+  }
+}
+
+/* ---- Hero altı: teklif + güven bandı (mevcut form/istatistik korunur) ---- */
+.lead-band{background:linear-gradient(180deg,#eef2fe 0%,var(--bg) 62%)}
+.lead-band .hero-copy h2{font-size:clamp(23px,3.2vw,34px);line-height:1.16;margin-bottom:12px}
+.lead-band .hero-copy>p{font-size:17px;color:var(--ink-soft);max-width:540px;margin-bottom:22px}
+
+/* ---- Sinematik hero — responsive ---- */
+@media (max-width:767px){
+  .cinematic-hero .hero-content{width:min(100% - 32px,1180px);padding:104px 0 88px}
+  .cinematic-hero .hero-description{margin-top:24px}
+  .cinematic-hero .hero-cta-row{flex-direction:column;gap:14px;width:100%;margin-top:38px}
+  .cinematic-hero .hero-cta{width:100%;min-width:0;padding:16px 28px}
+  .cinematic-hero .hero-cta-secondary{justify-content:center;min-height:46px;padding:8px 16px}
+}
+@media (max-width:380px){
+  .cinematic-hero .hero-title{font-size:clamp(1.75rem,8.4vw,2.2rem);letter-spacing:-.01em}
+}
+
+/* Hareket azaltma tercihini destekle */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto !important;
+    animation-duration:.01ms !important;
+    animation-delay:0ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}

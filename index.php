@@ -7,17 +7,37 @@ header_html($page);
 ?>
 <?php if($page==='home'): $posts=array_slice(posts_all(),0,3); $refs=array_values(array_filter(references_all(),fn($r)=>!empty($r['active']))); ?>
 
-<section class="hero hero-pro">
-  <div class="hero-orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span><span class="hero-grid-lines"></span></div>
+<section class="cinematic-hero">
+  <video
+    class="hero-video"
+    autoplay
+    loop
+    muted
+    playsinline
+    preload="metadata"
+    aria-hidden="true"
+  >
+    <source
+      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4"
+      type="video/mp4"
+    >
+  </video>
+  <div class="hero-content">
+    <h1 class="hero-title animate-fade-rise">İşletmenizi internette <em>güven veren</em>, müşteri kazandıran web siteyle <em>büyütün.</em></h1>
+    <p class="hero-description animate-fade-rise-delay">Tek sayfa siteden yönetim panelli kurumsal siteye kadar; mobil uyumlu, SEO temelli ve <b>WhatsApp’a dönüşüm</b> taşıyan profesyonel web çözümleri kuruyoruz.</p>
+    <div class="hero-cta-row animate-fade-rise-delay-2">
+      <a class="hero-cta liquid-glass" href="#teklif-hero">Ücretsiz Teklif Al</a>
+      <a class="hero-cta-secondary" href="/paketler">Paketleri İncele →</a>
+    </div>
+  </div>
+</section>
+
+<section class="section lead-band">
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <span class="eyebrow"><span class="eb-dot"></span><?=e($s['hero_badge'])?></span>
-      <h1>İşletmenizi internette <span class="hl">güven veren</span>, müşteri kazandıran web siteyle büyütün.</h1>
-      <p>Tek sayfa siteden yönetim panelli kurumsal siteye kadar; mobil uyumlu, SEO temelli ve <b>WhatsApp’a dönüşüm</b> taşıyan profesyonel web çözümleri kuruyoruz.</p>
-      <div class="hero-actions">
-        <a class="btn primary lg" href="#teklif-hero">Ücretsiz Teklif Al</a>
-        <a class="btn ghost lg" href="/paketler">Paketleri İncele</a>
-      </div>
+      <h2><?=e($s['hero_title'])?></h2>
+      <p><?=e($s['hero_desc'])?></p>
       <ul class="trust-badges">
         <?php foreach(trust_badges() as $b): ?><li><span class="tick">✓</span><?=e($b)?></li><?php endforeach; ?>
       </ul>
