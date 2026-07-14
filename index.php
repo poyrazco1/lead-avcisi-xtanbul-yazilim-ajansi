@@ -67,12 +67,19 @@ header_html($page);
   </div>
 </section>
 
-<section class="section services">
+<section class="section services feature-section">
   <div class="wrap">
     <div class="section-head center"><span class="eyebrow">Hizmetlerimiz</span><h2>İşinizi büyütecek dijital hizmetler</h2><p>İhtiyacınıza göre doğru paketi kuruyor, gereksiz masraf çıkarmadan sonuç odaklı ilerliyoruz.</p></div>
     <div class="card-grid cols-4">
       <?php foreach(front_services() as $sv): ?>
-      <article class="feature-card"><div class="ico"><?=e($sv['icon'])?></div><h3><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p></article>
+      <article class="feature-card liquid-glass-card">
+        <div class="feature-card-top">
+          <div class="feature-icon"><?=e($sv['icon'])?></div>
+          <?php if(!empty($sv['tags'])): ?><div class="feature-tags"><?php foreach($sv['tags'] as $t): ?><span class="feature-tag"><?=e($t)?></span><?php endforeach; ?></div><?php endif; ?>
+        </div>
+        <div class="feature-card-spacer"></div>
+        <div class="feature-card-content"><h3><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p></div>
+      </article>
       <?php endforeach; ?>
     </div>
   </div>
@@ -156,8 +163,17 @@ header_html($page);
 
 <?php elseif($page==='hizmetler'): ?>
 <section class="page-hero"><div class="wrap"><span class="eyebrow">Hizmetlerimiz</span><h1>Web tasarım, yazılım, SEO ve dijital pazarlama</h1><p>İşletmenizin ihtiyacına göre doğru dijital paketi kuruyor, ölçülebilir sonuçlar üretiyoruz.</p></div></section>
-<section class="section"><div class="wrap"><div class="card-grid cols-4">
-  <?php foreach(front_services() as $sv): ?><article class="feature-card"><div class="ico"><?=e($sv['icon'])?></div><h3><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p></article><?php endforeach; ?>
+<section class="section feature-section"><div class="wrap"><div class="card-grid cols-4">
+  <?php foreach(front_services() as $sv): ?>
+  <article class="feature-card liquid-glass-card">
+    <div class="feature-card-top">
+      <div class="feature-icon"><?=e($sv['icon'])?></div>
+      <?php if(!empty($sv['tags'])): ?><div class="feature-tags"><?php foreach($sv['tags'] as $t): ?><span class="feature-tag"><?=e($t)?></span><?php endforeach; ?></div><?php endif; ?>
+    </div>
+    <div class="feature-card-spacer"></div>
+    <div class="feature-card-content"><h3><?=e($sv['title'])?></h3><p><?=e($sv['desc'])?></p></div>
+  </article>
+  <?php endforeach; ?>
 </div></div></section>
 <section class="section process alt"><div class="wrap"><div class="section-head center"><span class="eyebrow">Süreçlerimiz</span><h2>Nasıl ilerliyoruz?</h2></div><div class="steps-grid">
   <?php foreach(process_steps() as $st): ?><article class="step-card"><b class="step-no"><?=e($st['no'])?></b><h3><?=e($st['title'])?></h3><p><?=e($st['desc'])?></p></article><?php endforeach; ?>
